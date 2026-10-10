@@ -33,7 +33,7 @@ type config struct {
 	name, host, listen, pin, layout, driver, logLevel string
 	allowedHosts                                      string
 	port                                              int
-	portSet, mdns, showVersion, background            bool
+	portSet, mdns, showVersion, background, detect    bool
 	install, uninstall                                bool
 }
 
@@ -77,6 +77,7 @@ func parseFlags() config {
 	flag.BoolVar(&c.mdns, "mdns", envBool("OPENCOUCHPAD_MDNS", true), "advertise <host>.local via mDNS and discover other remotes")
 	flag.StringVar(&c.logLevel, "log-level", env("OPENCOUCHPAD_LOG_LEVEL", "info"), "debug, info, warn or error")
 	flag.BoolVar(&c.showVersion, "version", false, "print version and exit")
+	flag.BoolVar(&c.detect, "detect-layout", false, "print the detected keyboard layout of the current user and exit (Linux)")
 	flag.BoolVar(&c.background, "background", false, "run without a console window (Windows) and log to a file")
 	flag.BoolVar(&c.install, "install", false, "start OpenCouchpad automatically at login (Windows) with the given flags")
 	flag.BoolVar(&c.uninstall, "uninstall", false, "remove the autostart entry (Windows)")
@@ -98,6 +99,10 @@ func main() {
 	c := parseFlags()
 	if c.showVersion {
 		fmt.Println("opencouchpad", version, runtime.GOOS+"/"+runtime.GOARCH)
+		return
+	}
+	if c.detect {
+		fmt.Println(keymap.Detect())
 		return
 	}
 	if c.install || c.uninstall {

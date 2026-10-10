@@ -32,7 +32,8 @@ phone browser ──HTTP──▶ opencouchpad (Go, single static binary)
 - **Linux text typing:** uinput only sends keycodes, so text → keycodes depends on the active XKB layout.
   `tools/genlayouts.py` uses `xkbcli compile-keymap` + `xkbcommon-keysyms.h` to generate exact tables
   (incl. AltGr levels and dead-key compositions) → `internal/keymap/layouts_gen.go`.
-  Layout auto-detected from `/etc/default/keyboard` / xorg conf; overridable by flag/env and per-client in UI settings.
+  Layout auto-detected from KDE `kxkbrc`, `/etc/default/keyboard` or xorg conf; overridable by flag/env and per-client in UI settings.
+  The sandboxed service (ProtectHome) cannot read `kxkbrc`, so install.sh runs `--detect-layout` as `$SUDO_USER` and saves `OPENCOUCHPAD_LAYOUT`.
 - **mDNS:** own minimal responder (`golang.org/x/net/dns/dnsmessage`, `ipv4`), SO_REUSEADDR to coexist with avahi / Windows mDNS.
   Probes for name conflict (`remote` → `remote-2`). Answers using the interface address in the querier's subnet.
   Browses `_opencouchpad._tcp` to list other OpenCouchpad servers → device switcher in UI.
@@ -88,13 +89,13 @@ Status: **v1 feature-complete** (2026-10-10).
 - Real `/dev/uinput` on the dev machine (KDE Wayland): devices created, motion accepted.
 - mDNS: `avahi-resolve -n <host>.local` and `avahi-browse _opencouchpad._tcp` see the server; two servers discover each other.
 
-### Not verified (no hardware/OS available in the dev session)
+### Not verified yet (owner will test Windows before announcing)
 - Windows runtime (only compiled), Docker build (docker not installed), real iPhone/Android devices.
 
 ### Ideas / next
 - macOS driver (CGEvent via purego, no cgo), optional HTTPS (wake lock, clipboard), gyro air-mouse, custom buttons.
 - Run `test/e2e` in CI.
-- Repo: https://github.com/maros-o/opencouchpad (module `github.com/maros-o/opencouchpad`).
+- Repo: https://github.com/maros-o/opencouchpad (module `github.com/maros-o/opencouchpad`). Renamed from OpenRemote in v0.2.0 (name taken by an IoT platform).
 
 ## Decisions log
 

@@ -70,6 +70,16 @@ fi
 install -m 0755 "$src" "$BIN"
 install -m 0644 "$HERE/opencouchpad.service" "$UNIT"
 [ -f "$ENVF" ] || install -m 0644 "$HERE/opencouchpad.env" "$ENVF"
+# The sandboxed service can't read home directories, so save the desktop
+# user's keyboard layout (e.g. from KDE settings) now, unless one is set.
+if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != root ] && ! grep -q '^OPENCOUCHPAD_LAYOUT=' "$ENVF"; then
+  home="$(getent passwd "$SUDO_USER" | cut -d: -f6)"
+  layout="$(runuser -u "$SUDO_USER" -- env -u XDG_CONFIG_HOME HOME="$home" "$BIN" --detect-layout 2>/dev/null || true)"
+  if [ -n "$layout" ]; then
+    echo "OPENCOUCHPAD_LAYOUT=\"$layout\"" >> "$ENVF"
+    echo "Keyboard layout: $layout (change OPENCOUCHPAD_LAYOUT in $ENVF)"
+  fi
+fi
 echo uinput > /etc/modules-load.d/opencouchpad.conf
 modprobe uinput || true
 systemctl daemon-reload
