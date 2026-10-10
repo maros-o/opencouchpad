@@ -56,7 +56,8 @@ install -m 0644 "$HERE/openremote.service" "$UNIT"
 echo uinput > /etc/modules-load.d/openremote.conf
 modprobe uinput || true
 systemctl daemon-reload
-systemctl enable --now openremote
+systemctl enable openremote
+systemctl restart openremote   # also picks up a new binary when updating
 sleep 1
 systemctl --no-pager --lines=0 status openremote || true
 echo

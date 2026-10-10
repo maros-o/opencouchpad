@@ -6,6 +6,7 @@ package keymap
 import (
 	"bufio"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -93,12 +94,20 @@ func List() []Info {
 var (
 	reDefault = regexp.MustCompile(`^\s*(XKBLAYOUT|XKBVARIANT)\s*=\s*"?([^"\n]*)"?`)
 	reXorg    = regexp.MustCompile(`(?i)Option\s+"Xkb(Layout|Variant)"\s+"([^"]*)"`)
+	reKDE     = regexp.MustCompile(`^(LayoutList|VariantList|Use)=(.*)$`)
 )
 
-// Detect guesses the system keyboard layout from Debian/Raspberry Pi OS
-// (/etc/default/keyboard) or X11 config (/etc/X11/xorg.conf.d/00-keyboard.conf,
-// written by localectl on most distros). Returns "" if unknown.
+// Detect guesses the keyboard layout: the user's KDE Plasma layouts
+// (~/.config/kxkbrc, when running as the desktop user), then Debian/Raspberry
+// Pi OS (/etc/default/keyboard), then X11 config
+// (/etc/X11/xorg.conf.d/00-keyboard.conf, written by localectl on most
+// distros). Returns "" if unknown.
 func Detect() string {
+	if dir, err := os.UserConfigDir(); err == nil {
+		if id := detectKDE(filepath.Join(dir, "kxkbrc")); id != "" {
+			return id
+		}
+	}
 	var layout, variant string
 	read := func(path string, re *regexp.Regexp) bool {
 		f, err := os.Open(path)
@@ -123,6 +132,34 @@ func Detect() string {
 	}
 	if !read("/etc/default/keyboard", reDefault) {
 		read("/etc/X11/xorg.conf.d/00-keyboard.conf", reXorg)
+	}
+	return Normalize(layout, variant)
+}
+
+// detectKDE reads the first layout of a KDE kxkbrc file, if KDE manages layouts.
+func detectKDE(path string) string {
+	f, err := os.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+	var layout, variant string
+	use := false
+	sc := bufio.NewScanner(f)
+	for sc.Scan() {
+		m := reKDE.FindStringSubmatch(strings.TrimSpace(sc.Text()))
+		switch {
+		case m == nil:
+		case m[1] == "LayoutList":
+			layout = m[2]
+		case m[1] == "VariantList":
+			variant = m[2]
+		case m[1] == "Use":
+			use = m[2] == "true"
+		}
+	}
+	if !use {
+		return ""
 	}
 	return Normalize(layout, variant)
 }
