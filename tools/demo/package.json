@@ -1,0 +1,13 @@
+{
+  "name": "openremote-demo",
+  "private": true,
+  "type": "module",
+  "description": "Renders docs/demo.gif and docs/demo.mp4 from the real web app",
+  "scripts": {
+    "capture": "node capture.mjs",
+    "render": "node render.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.56.0"
+  }
+}

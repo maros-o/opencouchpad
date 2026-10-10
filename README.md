@@ -4,6 +4,8 @@
 
 OpenRemote is a small self-hosted server for Linux (including Raspberry Pi) and Windows. It serves a fast web remote over your Wi-Fi, so it works the same on iPhone, Android, tablets and laptops.
 
+![OpenRemote demo: a phone controls a computer on the TV, pointing, scrolling, typing and playing a video](docs/demo.gif)
+
 ![OpenRemote on a phone: touchpad, media controls, settings, light theme](docs/screenshots/overview.png)
 
 ## Why
@@ -43,6 +45,8 @@ Then open **http://remote.local** on your phone (same Wi-Fi). That's it.
 The script downloads the right binary for your machine (Pi 3/4/5 64-bit, 32-bit Pi OS, Pi Zero, PCs), installs it to `/usr/local/bin/openremote` as a hardened systemd service that starts at boot, and loads the `uinput` module. Settings live in `/etc/default/openremote` (name, PIN, port…); after editing run `sudo systemctl restart openremote`. Logs: `journalctl -u openremote -f`. Remove with `curl -fsSL …/install.sh | sudo sh -s -- --uninstall`.
 
 Several computers on one network? Give each its own host name, e.g. `OPENREMOTE_HOST=pi` → `http://pi.local`.
+
+To update, run the same command again: it replaces the binary, keeps your settings and restarts the service.
 
 ### Raspberry Pi / Linux with Docker
 

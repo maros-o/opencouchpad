@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OpenRemote demo stage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=block" rel="stylesheet">
+<!--
+  Frame-driven demo stage. render.mjs loads this page, calls window.render(ms)
+  for every frame and screenshots it. Nothing here animates on its own: every
+  value is a function of the timeline position, so renders are reproducible.
+  The phone screens are real screenshots of the app and the TV pointer/scroll
+  replay the exact messages the app sent (out/capture.json).
+-->
+<style>
+  :root {
+    --wall: #141920; --wall-hi: #1b222c; --floor: #0d1015;
+    --text: #e8ecf1; --muted: #8f99a7; --signal: #f2b544; --ink: #1a1f26;
+    --font: "Nunito", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1600px; height: 900px; overflow: hidden; background: var(--wall); font-family: var(--font); color: var(--text); }
+  .abs { position: absolute; }
+
+  /* room */
+  #room { position: absolute; inset: 0; background: linear-gradient(180deg, var(--wall-hi) 0%, var(--wall) 70%); }
+  #ambient { position: absolute; left: -80px; top: 40px; width: 1360px; height: 860px; border-radius: 50%; filter: blur(70px); opacity: .55; }
+  #floor { position: absolute; left: 0; right: 0; top: 832px; bottom: 0; background: var(--floor); }
+  #console { position: absolute; left: 40px; width: 1120px; top: 792px; height: 46px; border-radius: 6px 6px 3px 3px;
+    background: linear-gradient(180deg, #2a2420 0%, #1d1916 100%); box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 18px 30px rgba(0,0,0,.5); }
+  #console::after { content: ""; position: absolute; left: 24px; right: 24px; top: 18px; height: 2px; background: rgba(0,0,0,.25); border-radius: 2px; }
+
+  /* TV */
+  #tv { position: absolute; left: 72px; top: 150px; width: 1060px; height: 605px; padding: 10px; border-radius: 14px;
+    background: #07090c; box-shadow: 0 0 0 1px #262c35, 0 30px 60px rgba(0,0,0,.55); }
+  #tv-stand { position: absolute; left: 532px; top: 755px; width: 140px; height: 37px;
+    background: linear-gradient(180deg, #0b0d10, #15181d); clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%); }
+  #screen { position: relative; width: 1040px; height: 585px; overflow: hidden; border-radius: 4px; background: #000; }
+  #screen-gloss { position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(115deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,0) 32%); }
+  #desk { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; transform: scale(0.541667); overflow: hidden; }
+
+  /* desktop (1920×1080 coordinates) */
+  #wallpaper { position: absolute; inset: 0;
+    background: radial-gradient(1200px 700px at 78% 18%, #3c4f7a 0%, rgba(60,79,122,0) 60%),
+                radial-gradient(900px 700px at 12% 90%, #4a3560 0%, rgba(74,53,96,0) 60%),
+                linear-gradient(160deg, #1d2740 0%, #151b2c 100%); }
+  #topbar { position: absolute; left: 0; right: 0; top: 0; height: 40px; background: rgba(10,13,20,.55);
+    display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-size: 20px; font-weight: 700; color: #cfd6e0; }
+  #dock { position: absolute; left: 675px; top: 976px; width: 570px; height: 100px; border-radius: 28px;
+    background: rgba(20,25,36,.6); box-shadow: 0 0 0 1px rgba(255,255,255,.08) inset; }
+  .dicon { position: absolute; top: 990px; width: 72px; height: 72px; border-radius: 20px; display: grid; place-items: center; box-shadow: 0 6px 14px rgba(0,0,0,.35); }
+  .dicon svg { width: 38px; height: 38px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .ddot { position: absolute; top: 1068px; width: 8px; height: 8px; border-radius: 4px; background: #e8ecf1; opacity: 0; }
+
+  /* Videos app window */
+  #win { position: absolute; left: 120px; top: 70px; width: 1680px; height: 890px; border-radius: 18px; overflow: hidden;
+    background: #10141b; box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 40px 80px rgba(0,0,0,.55); transform-origin: 885px 956px; }
+  #win-title { height: 54px; display: flex; align-items: center; padding: 0 24px; gap: 14px; font-size: 21px; font-weight: 700; color: #b9c2ce; background: #161b23; }
+  #win-title .ctl { margin-left: auto; display: flex; gap: 22px; }
+  #win-title .ctl i { width: 16px; height: 16px; border-radius: 8px; background: #2c343f; display: block; }
+  #toolbar { position: absolute; left: 0; right: 0; top: 54px; height: 164px; padding-top: 18px; display: flex; align-items: center; padding: 0 60px; gap: 26px; }
+  #logo { display: flex; align-items: center; gap: 12px; font-size: 34px; font-weight: 900; letter-spacing: -.5px; }
+  #logo b { width: 52px; height: 38px; border-radius: 11px; background: #e5484d; display: grid; place-items: center; }
+  #logo b::after { content: ""; border-left: 15px solid #fff; border-top: 9px solid transparent; border-bottom: 9px solid transparent; margin-left: 4px; }
+  #search { position: absolute; left: 580px; top: 104px; width: 760px; height: 62px; border-radius: 31px; background: #1c222c;
+    box-shadow: 0 0 0 2px #2a313c inset; display: flex; align-items: center; padding: 0 28px; gap: 16px; font-size: 25px; color: #6f7a88; }
+  #search svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
+  #search.focus { box-shadow: 0 0 0 3px var(--signal) inset; background: #20262f; }
+  #search-text { color: var(--text); white-space: pre; }
+  #search-caret { width: 2.5px; height: 30px; background: var(--signal); margin-left: -14px; }
+  #content { position: absolute; left: 0; right: 0; top: 214px; bottom: 0; overflow: hidden; }
+  #grid, #results { position: absolute; left: 60px; right: 60px; top: 0; }
+  .h { font-size: 30px; font-weight: 800; margin: 18px 0 22px; }
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 34px 34px; }
+  .card .th { height: 220px; border-radius: 16px; position: relative; overflow: hidden; }
+  .card .th span { position: absolute; right: 12px; bottom: 10px; background: rgba(0,0,0,.7); padding: 2px 10px; border-radius: 8px; font-size: 18px; font-weight: 700; }
+  .card .t { font-size: 22px; font-weight: 800; margin-top: 14px; line-height: 1.25; }
+  .card .m { font-size: 18px; color: var(--muted); margin-top: 4px; }
+  .row { display: flex; gap: 36px; padding: 18px; margin: 0 -18px 8px; border-radius: 20px; }
+  .row.hover { background: #1b212b; }
+  .row .th { width: 440px; height: 248px; flex: none; border-radius: 16px; position: relative; overflow: hidden; }
+  .row .t { font-size: 32px; font-weight: 800; margin-top: 8px; }
+  .row .m { font-size: 21px; color: var(--muted); margin-top: 8px; }
+  .row .d { font-size: 21px; color: #a3acb8; margin-top: 18px; max-width: 760px; line-height: 1.4; }
+
+  /* fullscreen player */
+  #player { position: absolute; inset: 0; overflow: hidden; background: #0b1220; transform-origin: 400px 520px; }
+  #rain { position: absolute; inset: 0; }
+  #player-title { position: absolute; left: 70px; bottom: 120px; font-size: 46px; font-weight: 900; text-shadow: 0 2px 20px rgba(0,0,0,.6); }
+  #player-sub { position: absolute; left: 70px; bottom: 84px; font-size: 24px; color: #c3cad4; }
+  #player-bar { position: absolute; left: 70px; right: 70px; bottom: 50px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.25); }
+  #player-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: #e5484d; }
+
+  #cursor { position: absolute; left: 0; top: 0; width: 34px; height: 50px; filter: drop-shadow(0 3px 4px rgba(0,0,0,.55)); }
+  #ripple { position: absolute; width: 90px; height: 90px; margin: -45px 0 0 -45px; border-radius: 50%; border: 5px solid var(--signal); opacity: 0; }
+
+  /* phone */
+  #phone { position: absolute; left: 1168px; top: 72px; width: 360px; height: 755px; border-radius: 62px; padding: 11px;
+    background: linear-gradient(145deg, #3a4048, #1d2127 40%, #2b3037); box-shadow: 0 0 0 1px #4a515b inset, 0 40px 80px rgba(0,0,0,.6), 0 0 0 2px #0b0d10; }
+  #pscreen { position: relative; width: 338px; height: 733px; border-radius: 52px; overflow: hidden; background: #000; }
+  #pview { position: absolute; left: 0; top: 0; width: 393px; height: 852px; transform-origin: 0 0; transform: scale(0.86); background: var(--ink); }
+  #status { position: absolute; left: 0; right: 0; top: 0; height: 54px; display: flex; align-items: center; justify-content: space-between; padding: 4px 34px 0 46px;
+    font: 700 17px/1 -apple-system, "SF Pro Text", var(--font); color: #fff; }
+  #status .ic { display: flex; gap: 6px; align-items: center; }
+  #island { position: absolute; left: 133px; top: 11px; width: 126px; height: 37px; border-radius: 19px; background: #000; }
+  .app { position: absolute; left: 0; top: 54px; width: 393px; height: 716px; }
+  #safari-blank { position: absolute; left: 0; top: 54px; width: 393px; height: 716px; background: #1c1c1e;
+    display: grid; place-items: center; color: #6d6d72; font-size: 15px; }
+  #safari { position: absolute; left: 0; top: 770px; width: 393px; height: 82px; background: #1c1c1e; }
+  #pill { position: absolute; left: 14px; right: 14px; top: 6px; height: 46px; border-radius: 15px; background: #2c2c2e; display: flex; align-items: center;
+    padding: 0 14px; font: 500 17px/1 -apple-system, "SF Pro Text", var(--font); color: #fff; overflow: hidden; }
+  #pill .aa { color: #fff; font-weight: 700; font-size: 15px; }
+  #pill .url { flex: 1; text-align: center; white-space: pre; }
+  #pill .caret { display: inline-block; width: 2px; height: 20px; background: #0a84ff; vertical-align: -4px; }
+  #pill-load { position: absolute; left: 0; bottom: 0; height: 3px; background: #0a84ff; }
+  #pill-ring { position: absolute; left: 10px; right: 10px; top: 2px; height: 54px; border-radius: 18px; border: 3px solid var(--signal); opacity: 0; }
+  #home { position: absolute; left: 130px; top: 838px; width: 134px; height: 5px; border-radius: 3px; background: #fff; }
+  /* iOS-style dark keyboard (phone chrome, drawn; the app itself is a screenshot) */
+  #kbd { position: absolute; left: 0; top: 552px; width: 393px; height: 300px; background: #2b2b2e; opacity: 0;
+    font: 400 23px/1 -apple-system, "SF Pro Text", var(--font); color: #fff; }
+  #kbd .key { position: absolute; height: 44px; border-radius: 7px; background: #5c5c60; display: grid; place-items: center;
+    box-shadow: 0 1px 0 rgba(0,0,0,.45); }
+  #kbd .key.fn { background: #3c3c3f; font-size: 16px; }
+  #kbd .key.down { background: #8a8a8f; }
+  #kbd .pop { position: absolute; width: 54px; height: 62px; border-radius: 10px; background: #8a8a8f; display: grid; place-items: center;
+    font-size: 34px; opacity: 0; box-shadow: 0 4px 10px rgba(0,0,0,.4); }
+  #kbd .glyph { position: absolute; top: 238px; width: 30px; height: 30px; }
+  #fingers { position: absolute; inset: 0; z-index: 5; }
+  .finger { position: absolute; width: 50px; height: 50px; margin: -25px 0 0 -25px; border-radius: 50%; opacity: 0;
+    background: radial-gradient(circle, rgba(255,255,255,.75) 0%, rgba(255,255,255,.35) 55%, rgba(255,255,255,.12) 100%);
+    box-shadow: 0 0 0 3px rgba(242,181,68,.95), 0 0 26px 6px rgba(242,181,68,.55); }
+
+  /* captions */
+  #cap { position: absolute; left: 72px; top: 44px; width: 1060px; height: 100px; }
+  .cap { position: absolute; left: 0; top: 0; opacity: 0; }
+  .cap h2 { margin: 0; font-size: 40px; font-weight: 900; letter-spacing: -.6px; }
+  .cap p { margin: 6px 0 0; font-size: 21px; color: var(--muted); font-weight: 600; }
+
+  /* end card */
+  #end { position: absolute; inset: 0; background: var(--wall); opacity: 0; display: grid; place-items: center; text-align: center; }
+  #end img { width: 132px; height: 132px; border-radius: 30px; }
+  #end h1 { margin: 26px 0 0; font-size: 76px; font-weight: 900; letter-spacing: -1.5px; }
+  #end p { margin: 10px 0 0; font-size: 27px; color: var(--muted); font-weight: 600; }
+  #end .url { display: inline-block; margin-top: 34px; padding: 12px 28px; border-radius: 30px; border: 2px solid var(--signal); color: var(--signal); font-size: 25px; font-weight: 800; }
+</style>
+</head>
+<body>
+<div id="room"><div id="ambient"></div><div id="floor"></div></div>
+<div id="console"></div>
+<div id="tv-stand"></div>
+<div id="tv"><div id="screen">
+  <div id="desk">
+    <div id="wallpaper"></div>
+    <div id="topbar"><span>Activities</span><span id="clock">20:41</span></div>
+    <div id="dock"></div>
+    <div id="dicons"></div>
+    <div id="win">
+      <div id="win-title"><span>Videos</span><span class="ctl"><i></i><i></i><i></i></span></div>
+      <div id="toolbar"><div id="logo"><b></b>Videos</div></div>
+      <div id="search" style="position:absolute"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg><span id="search-text"></span><span id="search-caret"></span><span id="search-ph">Search</span></div>
+      <div id="content"><div id="grid"></div><div id="results"></div></div>
+    </div>
+    <div id="player"><canvas id="rain" width="1920" height="1080"></canvas>
+      <div id="player-title">Rainy day jazz: café ambience</div>
+      <div id="player-sub">Slow Rain Studio</div>
+      <div id="player-bar"><i></i></div>
+    </div>
+    <div id="ripple"></div>
+    <svg id="cursor" viewBox="0 0 34 50"><path d="M3 2 L3 40 L12.5 31 L19 46 L25.5 43 L19 28.5 L31.5 28.5 Z" fill="#fff" stroke="#111" stroke-width="2.4" stroke-linejoin="round"/></svg>
+  </div>
+  <div id="screen-gloss"></div>
+</div></div>
+
+<div id="phone"><div id="pscreen"><div id="pview">
+  <img class="app" id="p-main" src="out/main.png">
+  <img class="app" id="p-used" src="out/main-used.png">
+  <img class="app" id="p-kb" src="out/kb.png" style="height:498px">
+  <div id="safari-blank">Start page</div>
+  <div id="fingers"></div>
+  <div id="status"><span>9:41</span><span class="ic">
+    <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="#fff"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="#fff"/><rect x="10" y="3" width="3" height="9" rx="1" fill="#fff"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#fff"/></svg>
+    <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 11.5l2.4-2.9a3.6 3.6 0 0 0-4.8 0z M3.4 6.4a7.4 7.4 0 0 1 10.2 0l1.6-1.9a9.9 9.9 0 0 0-13.4 0z M0 3.3a12.6 12.6 0 0 1 17 0" fill="#fff" stroke="#fff" stroke-width=".4"/></svg>
+    <svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="#fff" opacity=".45"/><rect x="2" y="2" width="18" height="9" rx="2" fill="#fff"/><rect x="24.5" y="4.5" width="2" height="4" rx="1" fill="#fff" opacity=".45"/></svg>
+  </span></div>
+  <div id="island"></div>
+  <div id="safari"><div id="pill-ring"></div><div id="pill"><span class="aa">AA</span><span class="url" id="url"></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg><div id="pill-load"></div></div></div>
+  <div id="kbd"></div>
+  <div id="home"></div>
+</div></div></div>
+
+<div id="cap"></div>
+<div id="end"><div>
+  <img src="../../web/icons/icon.svg" alt="">
+  <h1>OpenRemote</h1>
+  <p>Any phone becomes a touchpad and keyboard for Linux and Windows.</p>
+  <span class="url">github.com/maros-o/openremote</span>
+</div></div>
+
+<script type="module">
+const cap = await (await fetch('out/capture.json')).json();
+const $ = (s) => document.querySelector(s);
+const G = Object.fromEntries(cap.gestures.map((g) => [g.id, g]));
+const TEXT = 'rainy day jazz';
+
+// ------------------------------------------------------------------ timeline (ms)
+const T = {
+  urlType: 500, urlLoad: 1450, appIn: 1750,
+  dock: 2500, scroll: 5000, search: 6900, kbTap: 8950, keyStart: 9550, keyStep: 165,
+  play: 13000, endFade: 17000, end: 19800,
+};
+// Keyboard: tap the app's keyboard button, type, return, tap the button again to close.
+const KEYS = TEXT.split('').map((ch, i) => ({ ch, at: T.keyStart + i * T.keyStep + (ch === ' ' ? 40 : 0) }));
+T.enter = KEYS.at(-1).at + 280;
+KEYS.push({ ch: '\n', at: T.enter });
+KEYS.forEach((k, i) => { k.lat = cap.keys[i].sent[0].ms; }); // measured: phone → server, about 1 ms
+T.results = T.enter + 220;          // the video site loads results
+T.kbClose = T.enter + 650;
+const DOCK = { x: 699 + 2 * 90 + 36, y: 1026 };  // Videos icon (third in the dock) centre, desktop px
+const UNIT_PX = 0.55;               // desktop px per 1/120 wheel unit (3 lines of 22 px per notch)
+
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const k01 = (t, a, b) => clamp((t - a) / (b - a), 0, 1);
+const easeOut = (x) => 1 - (1 - x) ** 3;
+const easeInOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2);
+
+// ------------------------------------------------------------------ pointer replay
+// Absolute event list on the stage timeline: moves and scrolls exactly as sent.
+const events = [];
+for (const [id, start] of [['dock', T.dock], ['scroll', T.scroll], ['search', T.search], ['play', T.play]]) {
+  for (const m of G[id].sent) events.push({ at: start + m.ms, ...m });
+}
+events.sort((a, b) => a.at - b.at);
+const totalDock = G.dock.sent.filter((m) => m.t === 'move').reduce((a, m) => [a[0] + m.x, a[1] + m.y], [0, 0]);
+const START = { x: DOCK.x - totalDock[0], y: DOCK.y - totalDock[1] };
+const clicks = events.filter((m) => m.t === 'btn').map((m) => m.at);
+
+function pointerAt(t) {
+  let x = START.x, y = START.y, scroll = 0;
+  for (const m of events) {
+    if (m.at > t) break;
+    if (m.t === 'move') { x = clamp(x + m.x, 0, 1919); y = clamp(y + m.y, 0, 1079); }
+    else if (m.t === 'scroll') scroll += Math.abs(m.y) * UNIT_PX;
+  }
+  return { x, y, scroll };
+}
+const at = (t) => pointerAt(t);
+const P = { searchClick: at(clicks[1]), playClick: at(clicks[2]) };
+
+// ------------------------------------------------------------------ desktop content
+const DICONS = [
+  ['#3b82f6', '<path d="M4 7h6l2 2h8v9H4z"/>'],
+  ['#0ea5a4', '<circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c3 3 3 13 0 16M12 4c-3 3-3 13 0 16"/>'],
+  ['#e5484d', '<path d="M9 7v10l8-5z" fill="#fff"/>'],
+  ['#a855f7', '<path d="M9 17V6l10-2v11"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="15" r="2"/>'],
+  ['#27303b', '<path d="M5 8l4 4-4 4M11 16h7"/>'],
+  ['#64748b', '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>'],
+];
+$('#dicons').innerHTML = DICONS.map(([c, p], i) =>
+  `<div class="dicon" style="left:${699 + i * 90}px;background:${c}"><svg viewBox="0 0 24 24">${p}</svg></div>`).join('') +
+  `<div class="ddot" id="ddot" style="left:${DOCK.x - 4}px"></div>`;
+
+const thumbs = [
+  ['#f59e0b', '#7c2d12', 'sun'], ['#0ea5e9', '#1e3a8a', 'wave'], ['#a855f7', '#1e1b4b', 'city'], ['#22c55e', '#14532d', 'hill'],
+  ['#ef4444', '#450a0a', 'sun'], ['#06b6d4', '#083344', 'wave'], ['#eab308', '#422006', 'hill'], ['#ec4899', '#500724', 'city'],
+  ['#14b8a6', '#042f2e', 'hill'], ['#6366f1', '#1e1b4b', 'wave'], ['#f97316', '#431407', 'city'], ['#84cc16', '#1a2e05', 'sun'],
+  ['#3b82f6', '#172554', 'city'], ['#d946ef', '#4a044e', 'sun'], ['#10b981', '#022c22', 'wave'], ['#f43f5e', '#4c0519', 'hill'],
+];
+const art = ([a, b, kind]) => {
+  const shape = {
+    sun: `<circle cx="70%" cy="58%" r="18%" fill="${a}" opacity=".9"/><path d="M0 85 Q 25 70 50 80 T 100 75 V100 H0Z" fill="#000" opacity=".35" transform="scale(4.4 2.2)"/>`,
+    wave: `<path d="M0 60 Q 50 40 100 60 T 200 60 T 300 60 T 400 60 V220 H0Z" fill="${a}" opacity=".55"/><path d="M0 120 Q 50 100 100 120 T 200 120 T 300 120 T 400 120 V220 H0Z" fill="${a}" opacity=".85"/>`,
+    city: `<g fill="#000" opacity=".5"><rect x="20" y="90" width="50" height="130"/><rect x="80" y="60" width="40" height="160"/><rect x="130" y="110" width="60" height="110"/><rect x="200" y="40" width="45" height="180"/><rect x="255" y="95" width="55" height="125"/><rect x="320" y="70" width="40" height="150"/></g><circle cx="300" cy="40" r="16" fill="${a}"/>`,
+    hill: `<path d="M0 150 L120 60 L220 140 L300 80 L420 160 V220 H0Z" fill="#000" opacity=".4"/><path d="M0 180 Q 200 120 420 190 V220 H0Z" fill="${a}" opacity=".7"/>`,
+  }[kind];
+  return `<svg viewBox="0 0 400 220" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;background:linear-gradient(160deg, ${a}, ${b})">${shape}</svg>`;
+};
+const trending = [
+  ['Lo-fi beats to study to', 'Chill Room', '2.1M views'], ['Ocean waves, 10 hours', 'Blue Hour', '890K views'],
+  ['Night drive through Prague', 'City Lights', '1.4M views'], ['Hiking the Tatra ridge', 'Trail Notes', '312K views'],
+  ['Sunset timelapse, Lisbon', 'Golden Frames', '76K views'], ['How tides really work', 'Science Hour', '1.9M views'],
+  ['Autumn cabin, crackling fire', 'Slow Living', '4.2M views'], ['Synthwave mix for coding', 'Neon Tapes', '640K views'],
+  ['Lake Bled in winter', 'Wander', '233K views'], ['Deep sea creatures', 'Ocean Lab', '3.3M views'],
+  ['Street food in Bangkok', 'Hungry Roads', '980K views'], ['Spring garden tour', 'Green Thumb', '58K views'],
+  ['Tokyo at 3 am', 'City Lights', '2.7M views'], ['Retro game soundtrack', 'Chiptune Club', '410K views'],
+  ['Coral reef restoration', 'Blue Hour', '120K views'], ['Mountain bike descent', 'Trail Notes', '505K views'],
+];
+const dur = (i) => `${(i * 7) % 50 + 4}:${String((i * 13) % 60).padStart(2, '0')}`;
+$('#grid').innerHTML = `<div class="h">Trending</div><div class="cards">` + trending.map(([t, c, v], i) =>
+  `<div class="card"><div class="th">${art(thumbs[i])}<span>${dur(i)}</span></div><div class="t">${t}</div><div class="m">${c}, ${v}</div></div>`).join('') + '</div>';
+const results = [
+  ['Rainy day jazz: café ambience', 'Slow Rain Studio, 3.8M views', 'Soft piano and upright bass with gentle rain on the window. Two hours, no ads in the middle.', ['#3b82f6', '#0b1220', 'city']],
+  ['Smooth jazz for rainy evenings', 'Late Night Records, 1.2M views', 'Saxophone, brushes and a warm room. Perfect for reading.', ['#f59e0b', '#1c1206', 'sun']],
+  ['Rain on the window and piano', 'Quiet Keys, 640K views', 'Just the piano, the rain and a cup of tea.', ['#6366f1', '#0f1030', 'wave']],
+];
+$('#results').innerHTML = `<div class="h">Results for “${TEXT}”</div>` + results.map(([t, m, d, th], i) =>
+  `<div class="row" id="row${i}"><div class="th">${art(th)}<span style="position:absolute;right:12px;bottom:10px;background:rgba(0,0,0,.7);padding:2px 10px;border-radius:8px;font-size:18px;font-weight:700">${['2:04:11', '1:31:40', '58:02'][i]}</span></div><div><div class="t">${t}</div><div class="m">${m}</div><div class="d">${d}</div></div></div>`).join('');
+
+// Sanity: the replayed pointer must land on what it clicks.
+const inEl = (el, p) => { const r = el.getBoundingClientRect(), d = $('#desk').getBoundingClientRect(), s = 0.541667;
+  const x = d.left + p.x * s, y = d.top + p.y * s; return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom; };
+window.checks = () => {
+  window.render(T.results + 300);
+  return { dock: inEl(document.querySelectorAll('.dicon')[2], at(clicks[0])), search: inEl($('#search'), P.searchClick), play: inEl($('#row0'), P.playClick), start: START, P };
+};
+
+// ------------------------------------------------------------------ captions
+const CAPS = [
+  [0, 'Your computer is on the TV. You are on the couch.', 'Open remote.local on any phone. No app to install.'],
+  [T.dock - 300, 'Glide to point, tap to click.', 'Every finger movement is sent the instant it happens.'],
+  [T.scroll - 300, 'Two fingers to scroll, with momentum.', 'Smooth high-resolution scrolling, like a laptop touchpad.'],
+  [T.search - 300, 'Precise enough for small targets.', 'Slow movements stay exact. Fast swipes cross the screen.'],
+  [T.kbTap - 250, 'Just type.', 'Every key shows up on the TV the moment you press it.'],
+  [T.play - 300, 'Tap to play. Then sit back.', 'Media keys, volume and shortcuts are one tap away.'],
+];
+// keyboard layout (phone px inside #kbd)
+const KB = {};
+{
+  const rows = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'], w = 33.3, g = 6, h = 44, ys = [10, 64, 118, 172];
+  let html = '';
+  const key = (id, label, x, y, kw, fn) => { KB[id] = { x, y, w: kw, h }; html += `<div class="key${fn ? ' fn' : ''}" id="k-${id === ' ' ? 'space' : id === '\n' ? 'ret' : id}" style="left:${x}px;top:${y}px;width:${kw}px">${label}</div>`; };
+  rows.forEach((r, ri) => {
+    const x0 = (393 - r.length * w - (r.length - 1) * g) / 2; // rows are centred
+    [...r].forEach((c, i) => key(c, c, x0 + i * (w + g), ys[ri], w));
+  });
+  key('shift', '⇧', 3, ys[2], 44, true); key('bksp', '⌫', 393 - 3 - 44, ys[2], 44, true);
+  key('123', '123', 3, ys[3], 88, true); key(' ', 'space', 3 + 88 + g, ys[3], 393 - 6 - 88 - 88 - 2 * g); key('\n', 'return', 393 - 3 - 88, ys[3], 88, true);
+  html += '<div class="pop" id="kpop"></div>';
+  html += '<svg class="glyph" style="left:28px" viewBox="0 0 24 24" fill="none" stroke="#c7c7cc" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>';
+  html += '<svg class="glyph" style="left:335px" viewBox="0 0 24 24" fill="none" stroke="#c7c7cc" stroke-width="1.6" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>';
+  $('#kbd').innerHTML = html;
+}
+const kbCenter = (id) => { const r = KB[id]; return [r.x + r.w / 2, 552 + r.y + r.h / 2]; };
+const btnCenter = (b, top = 54) => [b.x + b.width / 2, top + b.y + b.height / 2];
+
+$('#cap').innerHTML = CAPS.map(([, h, p], i) => `<div class="cap" id="cap${i}"><h2>${h}</h2><p>${p}</p></div>`).join('');
+
+// ------------------------------------------------------------------ fingers
+const fingerEls = [0, 1].map(() => { const d = document.createElement('div'); d.className = 'finger'; $('#fingers').append(d); return d; });
+const padToView = ([nx, ny]) => [cap.pad.x + nx * cap.pad.width, 54 + cap.pad.y + ny * cap.pad.height];
+function fingersAt(t) {
+  const out = [];
+  for (const [id, start] of [['dock', T.dock], ['scroll', T.scroll], ['search', T.search], ['play', T.play]]) {
+    const tl = t - start, tr = G[id].touches;
+    if (tl < 0 || tl > tr.at(-1).t + 250) continue;
+    let i = -1;
+    for (let j = 0; j < tr.length; j++) { if (tr[j].t <= tl) i = j; else break; }
+    if (i < 0) continue;
+    if (tr[i].pts.length) {
+      // contact: find when this contact began for the press-in scale
+      let s = i; while (s > 0 && tr[s - 1].pts.length) s--;
+      const age = tl - tr[s].t;
+      tr[i].pts.forEach((p, n) => out.push({ p: padToView(p), o: 1, s: 0.8 + 0.2 * easeOut(k01(age, 0, 90)), n }));
+    } else if (i > 0 && tr[i - 1].pts.length) {
+      const since = tl - tr[i].t;
+      tr[i - 1].pts.forEach((p, n) => out.push({ p: padToView(p), o: 1 - k01(since, 0, 200), s: 1 + 0.25 * k01(since, 0, 200), n }));
+    }
+  }
+  // taps on the keyboard button and the keys
+  const taps = [{ at: T.kbTap, p: btnCenter(cap.kbBtnMain) }, ...KEYS.map((k) => ({ at: k.at, p: kbCenter(k.ch) })), { at: T.kbClose, p: btnCenter(cap.kbBtnKb) }];
+  for (const tp of taps) {
+    const st = t - tp.at;
+    if (st >= -70 && st < 230) out.push({ p: tp.p, o: st < 30 ? k01(st, -70, -20) : 1 - k01(st, 30, 220), s: st < 30 ? 0.85 + 0.15 * k01(st, -70, 0) : 1 + 0.2 * k01(st, 30, 220), n: 0 });
+  }
+  return out;
+}
+
+// ------------------------------------------------------------------ rain (player)
+const rc = $('#rain').getContext('2d');
+const drops = Array.from({ length: 260 }, (_, i) => { const r = Math.sin(i * 12.9898) * 43758.5453; const f = r - Math.floor(r);
+  const r2 = Math.sin(i * 78.233) * 12345.678; const g = r2 - Math.floor(r2); return { x: f * 2000, y0: g * 1200, v: 0.9 + f * 1.4, l: 26 + g * 40 }; });
+function drawRain(t) {
+  rc.clearRect(0, 0, 1920, 1080);
+  const bg = rc.createLinearGradient(0, 0, 0, 1080);
+  bg.addColorStop(0, '#0f1b33'); bg.addColorStop(1, '#070b14'); rc.fillStyle = bg; rc.fillRect(0, 0, 1920, 1080);
+  // warm lamp and blurred city lights behind the glass
+  const lights = [[1450, 380, 260, 'rgba(242,181,68,.42)'], [380, 620, 180, 'rgba(242,120,68,.28)'], [980, 300, 120, 'rgba(120,170,255,.25)'], [1650, 760, 150, 'rgba(242,181,68,.25)'], [700, 260, 90, 'rgba(255,220,160,.22)']];
+  for (const [x, y, r, c] of lights) {
+    const g = rc.createRadialGradient(x, y + Math.sin(t / 900 + x) * 6, 0, x, y, r); g.addColorStop(0, c); g.addColorStop(1, 'rgba(0,0,0,0)');
+    rc.fillStyle = g; rc.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  rc.strokeStyle = 'rgba(190,210,255,.35)'; rc.lineWidth = 2;
+  rc.beginPath();
+  for (const d of drops) {
+    const y = (d.y0 + t * d.v) % 1240 - 120, x = d.x - y * 0.12;
+    rc.moveTo(x, y); rc.lineTo(x - d.l * 0.12, y + d.l);
+  }
+  rc.stroke();
+}
+
+// ------------------------------------------------------------------ render
+const show = (el, o) => { el.style.opacity = o; el.style.visibility = o <= 0.001 ? 'hidden' : 'visible'; };
+window.render = (t) => {
+  // captions: the old one fades out, then the new one fades in (no overlap)
+  CAPS.forEach(([start], i) => {
+    const next = CAPS[i + 1]?.[0] ?? T.endFade;
+    const inn = i === 0 ? 1 : k01(t, start + 160, start + 420);
+    const out = 1 - k01(t, next - 40, next + 140);
+    const el = $('#cap' + i); show(el, Math.min(inn, out));
+    el.style.transform = `translateY(${(1 - easeOut(inn)) * 10}px)`;
+  });
+
+  // phone: Safari typing remote.local → app
+  const url = 'remote.local';
+  const n = Math.round(clamp((t - T.urlType) / 70, 0, url.length));
+  const typing = t < T.urlLoad;
+  $('#url').innerHTML = typing ? url.slice(0, n) + '<span class="caret" style="opacity:' + (Math.floor(t / 400) % 2 ? 0.2 : 1) + '"></span>' : url;
+  $('#pill-load').style.width = `${easeOut(k01(t, T.urlLoad, T.appIn)) * 100}%`;
+  $('#pill-load').style.opacity = 1 - k01(t, T.appIn, T.appIn + 150);
+  const ring = k01(t, 1900, 2300) - k01(t, 2600, 3000);
+  $('#pill-ring').style.opacity = ring;
+  show($('#safari-blank'), 1 - k01(t, T.appIn, T.appIn + 200));
+  show($('#p-main'), 1);
+  show($('#p-used'), k01(t, T.dock + 120, T.dock + 320));
+  // keyboard slides up after the tap on the keyboard button, down after the second tap
+  const up = easeOut(k01(t, T.kbTap + 40, T.kbTap + 300)) * (1 - easeInOut(k01(t, T.kbClose + 40, T.kbClose + 300)));
+  show($('#kbd'), up > 0 ? 1 : 0);
+  $('#kbd').style.transform = `translateY(${(1 - up) * 300}px)`;
+  show($('#p-kb'), t > T.kbTap + 40 && t < T.kbClose + 40 ? 1 : 0);
+  show($('#safari'), 1 - up);
+  const pressed = KEYS.find((k) => t >= k.at - 20 && t < k.at + 110);
+  document.querySelectorAll('#kbd .key').forEach((el) => el.classList.remove('down'));
+  const pop = $('#kpop');
+  if (pressed) {
+    const id = pressed.ch === ' ' ? 'space' : pressed.ch === '\n' ? 'ret' : pressed.ch;
+    $('#k-' + id).classList.add('down');
+    if (/[a-z]/.test(pressed.ch)) {
+      const r = KB[pressed.ch];
+      pop.textContent = pressed.ch; pop.style.left = (r.x + r.w / 2 - 27) + 'px'; pop.style.top = (r.y - 58) + 'px'; pop.style.opacity = 1;
+    } else pop.style.opacity = 0;
+  } else pop.style.opacity = 0;
+
+  const fs = fingersAt(t);
+  fingerEls.forEach((el, i) => {
+    const f = fs[i];
+    if (!f) return show(el, 0);
+    show(el, f.o);
+    el.style.left = f.p[0] + 'px'; el.style.top = f.p[1] + 'px'; el.style.transform = `scale(${f.s})`;
+  });
+
+  // TV
+  const p = pointerAt(t);
+  $('#cursor').style.transform = `translate(${p.x - 3}px, ${p.y - 2}px)`;
+  const lastClick = clicks.filter((c) => c <= t).at(-1);
+  if (lastClick !== undefined && t - lastClick < 420) {
+    const c = pointerAt(lastClick), a = (t - lastClick) / 420;
+    $('#ripple').style.left = c.x + 'px'; $('#ripple').style.top = c.y + 'px';
+    $('#ripple').style.opacity = (1 - a) * 0.95; $('#ripple').style.transform = `scale(${0.35 + easeOut(a) * 0.9})`;
+  } else $('#ripple').style.opacity = 0;
+
+  const open = easeOut(k01(t, clicks[0] + 40, clicks[0] + 320));
+  show($('#win'), open);
+  $('#win').style.transform = `scale(${0.2 + 0.8 * open})`;
+  $('#ddot').style.opacity = k01(t, clicks[0], clicks[0] + 200);
+  const scrolled = p.scroll;
+  $('#grid').style.transform = `translateY(${-scrolled}px)`;
+  const resultsIn = k01(t, T.results, T.results + 260);
+  show($('#grid'), 1 - resultsIn);
+  show($('#results'), resultsIn);
+  $('#results').style.transform = `translateY(${(1 - easeOut(resultsIn)) * 24}px)`;
+  const focused = t >= clicks[1];
+  $('#search').classList.toggle('focus', focused && t < T.results);
+  const typed = KEYS.filter((k) => k.ch !== '\n' && t >= k.at + k.lat).length; // each key as it arrives
+  $('#search-text').textContent = TEXT.slice(0, typed);
+  show($('#search-ph'), typed ? 0 : 1);
+  show($('#search-caret'), focused && t < T.results && Math.floor((t - clicks[1]) / 530) % 2 === 0 ? 1 : 0);
+  $('#search-caret').style.marginLeft = typed ? '-12px' : '-14px';
+  $('#row0').classList.toggle('hover', t > T.results && inEl($('#row0'), p));
+
+  const play = easeInOut(k01(t, clicks[2] + 60, clicks[2] + 520));
+  show($('#player'), play);
+  $('#player').style.transform = `scale(${0.3 + 0.7 * play})`;
+  $('#player').style.transformOrigin = `${P.playClick.x}px ${P.playClick.y}px`;
+  if (play > 0) drawRain(t);
+  $('#player-bar i').style.width = `${4 + k01(t, clicks[2], T.end) * 6}%`;
+  const hud = 1 - k01(t, clicks[2] + 2600, clicks[2] + 3000);
+  ['#player-title', '#player-sub', '#player-bar'].forEach((s) => { $(s).style.opacity = hud; });
+  show($('#cursor'), 1 - k01(t, clicks[2] + 1800, clicks[2] + 2200));
+  show($('#topbar'), 1 - play);
+  show($('#dock'), 1 - play); show($('#dicons'), 1 - play);
+
+  // ambient light follows the screen: cool desktop → warm video
+  const warm = play;
+  $('#ambient').style.background = `radial-gradient(closest-side, rgba(${Math.round(70 + 172 * warm)}, ${Math.round(100 + 81 * warm)}, ${Math.round(190 - 122 * warm)}, .55), rgba(0,0,0,0))`;
+
+  $('#clock').textContent = '20:41';
+  show($('#end'), easeInOut(k01(t, T.endFade, T.endFade + 500)));
+  $('#end > div').style.transform = `translateY(${(1 - easeOut(k01(t, T.endFade + 150, T.endFade + 700))) * 18}px)`;
+};
+window.duration = T.end;
+await document.fonts.ready;
+await Promise.all([...document.images].map((i) => i.decode().catch(() => {})));
+window.ready = true;
+</script>
+</body>
+</html>
