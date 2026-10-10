@@ -1,4 +1,4 @@
-module github.com/maros-o/openremote
+module github.com/maros-o/opencouchpad
 
 go 1.26.0
 

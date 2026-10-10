@@ -22,9 +22,9 @@ import (
 	"github.com/gorilla/websocket"
 	qrcode "github.com/skip2/go-qrcode"
 
-	"github.com/maros-o/openremote/internal/input"
-	"github.com/maros-o/openremote/internal/keymap"
-	"github.com/maros-o/openremote/internal/mdns"
+	"github.com/maros-o/opencouchpad/internal/input"
+	"github.com/maros-o/opencouchpad/internal/keymap"
+	"github.com/maros-o/opencouchpad/internal/mdns"
 )
 
 // Config configures the server.
@@ -59,7 +59,7 @@ type asset struct {
 	etag  string
 }
 
-const cookieName = "openremote_session"
+const cookieName = "opencouchpad_session"
 
 // New builds a server.
 func New(cfg Config) (*Server, error) {
@@ -74,7 +74,7 @@ func New(cfg Config) (*Server, error) {
 		},
 	}
 	if cfg.PIN != "" {
-		m := hmac.New(sha256.New, []byte("openremote-session-v1"))
+		m := hmac.New(sha256.New, []byte("opencouchpad-session-v1"))
 		m.Write([]byte(cfg.PIN))
 		s.token = hex.EncodeToString(m.Sum(nil))
 	}

@@ -1,15 +1,15 @@
 #!/bin/sh
-# Install OpenRemote as a systemd service.
-#   sudo ./install.sh                 # uses ./openremote or downloads the latest release
+# Install OpenCouchpad as a systemd service.
+#   sudo ./install.sh                 # uses ./opencouchpad or downloads the latest release
 #   sudo ./install.sh path/to/binary
 #   sudo ./install.sh --uninstall
-#   curl -fsSL https://raw.githubusercontent.com/maros-o/openremote/main/deploy/linux/install.sh | sudo sh
+#   curl -fsSL https://raw.githubusercontent.com/maros-o/opencouchpad/main/deploy/linux/install.sh | sudo sh
 set -eu
 
-REPO="${REPO:-maros-o/openremote}"
-BIN=/usr/local/bin/openremote
-UNIT=/etc/systemd/system/openremote.service
-ENVF=/etc/default/openremote
+REPO="${REPO:-maros-o/opencouchpad}"
+BIN=/usr/local/bin/opencouchpad
+UNIT=/etc/systemd/system/opencouchpad.service
+ENVF=/etc/default/opencouchpad
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
 fetch() { if command -v curl >/dev/null; then curl -fsSL "$1" -o "$2"; else wget -qO "$2" "$1"; fi; }
@@ -17,16 +17,16 @@ fetch() { if command -v curl >/dev/null; then curl -fsSL "$1" -o "$2"; else wget
 [ "$(id -u)" -eq 0 ] || { echo "Please run as root (sudo $0)"; exit 1; }
 
 if [ "${1:-}" = "--uninstall" ]; then
-  systemctl disable --now openremote 2>/dev/null || true
-  rm -f "$BIN" "$UNIT" /etc/modules-load.d/openremote.conf
+  systemctl disable --now opencouchpad 2>/dev/null || true
+  rm -f "$BIN" "$UNIT" /etc/modules-load.d/opencouchpad.conf
   systemctl daemon-reload
-  echo "OpenRemote removed (settings kept in $ENVF)."
+  echo "OpenCouchpad removed (settings kept in $ENVF)."
   exit 0
 fi
 
 src="${1:-}"
 if [ -z "$src" ]; then
-  for c in ./openremote "$HERE/../../openremote"; do [ -x "$c" ] && src="$c" && break; done
+  for c in ./opencouchpad "$HERE/../../opencouchpad"; do [ -x "$c" ] && src="$c" && break; done
 fi
 if [ -z "$src" ]; then
   case "$(uname -m)" in
@@ -36,30 +36,30 @@ if [ -z "$src" ]; then
     armv6l) arch=armv6 ;;
     *) echo "Unsupported architecture $(uname -m)"; exit 1 ;;
   esac
-  url="https://github.com/$REPO/releases/latest/download/openremote-linux-$arch"
+  url="https://github.com/$REPO/releases/latest/download/opencouchpad-linux-$arch"
   echo "Downloading $url"
   src="$(mktemp)"
   fetch "$url" "$src"
 fi
 
 # Piped from curl: the service and config files aren't next to the script.
-if [ ! -f "$HERE/openremote.service" ]; then
+if [ ! -f "$HERE/opencouchpad.service" ]; then
   HERE="$(mktemp -d)"
   raw="https://raw.githubusercontent.com/$REPO/main/deploy/linux"
-  fetch "$raw/openremote.service" "$HERE/openremote.service"
-  fetch "$raw/openremote.env" "$HERE/openremote.env"
+  fetch "$raw/opencouchpad.service" "$HERE/opencouchpad.service"
+  fetch "$raw/opencouchpad.env" "$HERE/opencouchpad.env"
 fi
 
 install -m 0755 "$src" "$BIN"
-install -m 0644 "$HERE/openremote.service" "$UNIT"
-[ -f "$ENVF" ] || install -m 0644 "$HERE/openremote.env" "$ENVF"
-echo uinput > /etc/modules-load.d/openremote.conf
+install -m 0644 "$HERE/opencouchpad.service" "$UNIT"
+[ -f "$ENVF" ] || install -m 0644 "$HERE/opencouchpad.env" "$ENVF"
+echo uinput > /etc/modules-load.d/opencouchpad.conf
 modprobe uinput || true
 systemctl daemon-reload
-systemctl enable openremote
-systemctl restart openremote   # also picks up a new binary when updating
+systemctl enable opencouchpad
+systemctl restart opencouchpad   # also picks up a new binary when updating
 sleep 1
-systemctl --no-pager --lines=0 status openremote || true
+systemctl --no-pager --lines=0 status opencouchpad || true
 echo
-echo "OpenRemote is running. Open http://$(. "$ENVF"; echo "${OPENREMOTE_HOST:-remote}").local on your phone."
-echo "Settings: $ENVF   Logs: journalctl -u openremote -f"
+echo "OpenCouchpad is running. Open http://$(. "$ENVF"; echo "${OPENCOUCHPAD_HOST:-remote}").local on your phone."
+echo "Settings: $ENVF   Logs: journalctl -u opencouchpad -f"

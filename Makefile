@@ -6,13 +6,13 @@ TARGETS := linux/amd64 linux/arm64 linux/arm/7 linux/arm/6 windows/amd64 windows
 .PHONY: build run dev test lint dist docker layouts clean
 
 build:            ## build for this machine
-	$(GOBUILD) -o openremote ./cmd/openremote
+	$(GOBUILD) -o opencouchpad ./cmd/opencouchpad
 
 run: build        ## run with real input (needs /dev/uinput access)
-	./openremote --port 8080
+	./opencouchpad --port 8080
 
 dev:              ## run without touching your mouse/keyboard (logs input instead)
-	go run ./cmd/openremote --driver dryrun --port 8080 --host openremote-dev --log-level debug
+	go run ./cmd/opencouchpad --driver dryrun --port 8080 --host opencouchpad-dev --log-level debug
 
 test:
 	go vet ./...
@@ -23,17 +23,17 @@ dist:             ## cross-compile release binaries into dist/
 	@mkdir -p dist
 	@for t in $(TARGETS); do \
 		os=$${t%%/*}; rest=$${t#*/}; arch=$${rest%%/*}; arm=$$( [ "$$arch" = arm ] && echo $${rest#*/} ); \
-		name=openremote-$$os-$$arch$${arm:+v$$arm}; [ $$os = windows ] && name=$$name.exe; \
-		echo "  $$name"; GOOS=$$os GOARCH=$$arch GOARM=$$arm $(GOBUILD) -o dist/$$name ./cmd/openremote || exit 1; \
+		name=opencouchpad-$$os-$$arch$${arm:+v$$arm}; [ $$os = windows ] && name=$$name.exe; \
+		echo "  $$name"; GOOS=$$os GOARCH=$$arch GOARM=$$arm $(GOBUILD) -o dist/$$name ./cmd/opencouchpad || exit 1; \
 	done
-	cd dist && sha256sum openremote-* > SHA256SUMS
+	cd dist && sha256sum opencouchpad-* > SHA256SUMS
 
 docker:
-	docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6 --build-arg VERSION=$(VERSION) -t openremote:$(VERSION) .
+	docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6 --build-arg VERSION=$(VERSION) -t opencouchpad:$(VERSION) .
 
 layouts:          ## regenerate keyboard layout tables from the system XKB database
 	python3 tools/genlayouts.py > internal/keymap/layouts_gen.go
 	gofmt -w internal/keymap/layouts_gen.go
 
 clean:
-	rm -rf dist openremote openremote.exe
+	rm -rf dist opencouchpad opencouchpad.exe

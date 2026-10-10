@@ -1,4 +1,4 @@
-# AGENTS.md — OpenRemote
+# AGENTS.md — OpenCouchpad
 
 Working notes for AI agents / contributors. Keep this file up to date: plan, decisions, progress.
 
@@ -18,12 +18,12 @@ Requirements from the owner:
 ## Architecture
 
 ```
-phone browser ──HTTP──▶ openremote (Go, single static binary)
+phone browser ──HTTP──▶ opencouchpad (Go, single static binary)
                ◀─WS──▶   ├─ embedded web UI (vanilla JS, no build step)
                          ├─ WebSocket: binary frames for move/scroll, JSON for the rest
                          ├─ input drivers: linux=uinput, windows=SendInput, dryrun=log
                          ├─ keymap: XKB layout tables (generated) for Linux text typing
-                         └─ mDNS responder: <host>.local A record + _openremote._tcp service + peer discovery
+                         └─ mDNS responder: <host>.local A record + _opencouchpad._tcp service + peer discovery
 ```
 
 - **Language:** Go (CGO_ENABLED=0) → trivial cross-compile (linux amd64/arm64/armv7/armv6, windows amd64/arm64), tiny Docker image (`scratch`).
@@ -35,7 +35,7 @@ phone browser ──HTTP──▶ openremote (Go, single static binary)
   Layout auto-detected from `/etc/default/keyboard` / xorg conf; overridable by flag/env and per-client in UI settings.
 - **mDNS:** own minimal responder (`golang.org/x/net/dns/dnsmessage`, `ipv4`), SO_REUSEADDR to coexist with avahi / Windows mDNS.
   Probes for name conflict (`remote` → `remote-2`). Answers using the interface address in the querier's subnet.
-  Browses `_openremote._tcp` to list other OpenRemote servers → device switcher in UI.
+  Browses `_opencouchpad._tcp` to list other OpenCouchpad servers → device switcher in UI.
 - **Protocol** (WebSocket `/ws`):
   - Binary: `0x01 move  i16 dx, i16 dy` · `0x02 scroll i16 dx, i16 dy` (1/120 notch units)
   - JSON text: `{"t":"btn","b":1-5,"a":"down|up|click"}`, `{"t":"key","k":"Enter","m":["ctrl"],"a":"tap|down|up"}`,
@@ -44,12 +44,12 @@ phone browser ──HTTP──▶ openremote (Go, single static binary)
   - On disconnect the server releases every button/key that client still holds (no stuck keys).
 - **Client latency tricks:** send on every touchmove (no rAF batching); coalesce only when `ws.bufferedAmount` grows (congestion);
   sub-pixel remainder accumulation; velocity-based acceleration curve (EMA); kinetic (inertial) two-finger scroll; ping/RTT indicator; auto-reconnect.
-- **Auth:** optional PIN (`--pin` / `OPENREMOTE_PIN`) → HMAC cookie; WS checks cookie. Off by default (LAN), README warns.
+- **Auth:** optional PIN (`--pin` / `OPENCOUCHPAD_PIN`) → HMAC cookie; WS checks cookie. Off by default (LAN), README warns.
 
 ## Layout
 
 ```
-cmd/openremote/        main, flags/env config, startup banner + terminal QR
+cmd/opencouchpad/        main, flags/env config, startup banner + terminal QR
 internal/input/        Driver interface; uinput_linux.go, sendinput_windows.go, dryrun.go, keys (names → codes)
 internal/keymap/       layout tables (generated) + lookup; Linux text → strokes
 internal/server/       HTTP, WS, protocol, auth, peers API, QR endpoint
@@ -65,7 +65,7 @@ Dockerfile, docker-compose.yml, Makefile, .github/workflows
 Status: **v1 feature-complete** (2026-10-10).
 
 - [x] Plan + AGENTS.md
-- [x] Go module, config (flags + `OPENREMOTE_*` env), main, startup banner + terminal QR
+- [x] Go module, config (flags + `OPENCOUCHPAD_*` env), main, startup banner + terminal QR
 - [x] input: Linux uinput (separate mouse + keyboard devices, hi-res wheel, restricted key bits — no power/rfkill)
 - [x] input: Windows SendInput (Unicode text, VkKeyScan combos, scan codes, extended keys)
 - [x] input: dryrun driver
@@ -86,7 +86,7 @@ Status: **v1 feature-complete** (2026-10-10).
 - Headless Chromium (playwright, mobile emulation, CDP touch events): every gesture, keyboard diff, shortcuts,
   clean-drag, modifiers, PIN flow, device switcher — scripts in `test/e2e/`.
 - Real `/dev/uinput` on the dev machine (KDE Wayland): devices created, motion accepted.
-- mDNS: `avahi-resolve -n <host>.local` and `avahi-browse _openremote._tcp` see the server; two servers discover each other.
+- mDNS: `avahi-resolve -n <host>.local` and `avahi-browse _opencouchpad._tcp` see the server; two servers discover each other.
 
 ### Not verified (no hardware/OS available in the dev session)
 - Windows runtime (only compiled), Docker build (docker not installed), real iPhone/Android devices.
@@ -94,7 +94,7 @@ Status: **v1 feature-complete** (2026-10-10).
 ### Ideas / next
 - macOS driver (CGEvent via purego, no cgo), optional HTTPS (wake lock, clipboard), gyro air-mouse, custom buttons.
 - Run `test/e2e` in CI.
-- Repo: https://github.com/maros-o/openremote (module `github.com/maros-o/openremote`).
+- Repo: https://github.com/maros-o/opencouchpad (module `github.com/maros-o/opencouchpad`).
 
 ## Decisions log
 

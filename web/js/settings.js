@@ -1,5 +1,5 @@
 // Per-phone preferences, kept in localStorage.
-const KEY = 'openremote.settings.v1';
+const KEY = 'opencouchpad.settings.v1';
 
 export const defaults = {
   speed: 1.6,      // base pointer gain (computer px per finger px)

@@ -1,5 +1,5 @@
 {
-  "name": "openremote-demo",
+  "name": "opencouchpad-demo",
   "private": true,
   "type": "module",
   "description": "Renders docs/demo.gif and docs/demo.mp4 from the real web app",

@@ -25,7 +25,7 @@ func autostart(install bool) error {
 	}
 	defer k.Close()
 	if !install {
-		if err := k.DeleteValue("OpenRemote"); err != nil && err != registry.ErrNotExist {
+		if err := k.DeleteValue("OpenCouchpad"); err != nil && err != registry.ErrNotExist {
 			return err
 		}
 		fmt.Println("Autostart removed.")
@@ -46,10 +46,10 @@ func autostart(install bool) error {
 		args = append(args, a)
 	}
 	cmd := strings.Join(args, " ")
-	if err := k.SetStringValue("OpenRemote", cmd); err != nil {
+	if err := k.SetStringValue("OpenCouchpad", cmd); err != nil {
 		return err
 	}
-	fmt.Println("OpenRemote will start automatically when you log in:")
+	fmt.Println("OpenCouchpad will start automatically when you log in:")
 	fmt.Println("  " + cmd)
 	fmt.Println("Log file:", logPath())
 	return nil
@@ -64,7 +64,7 @@ func logPath() string {
 	if dir == "" {
 		dir = os.TempDir()
 	}
-	return filepath.Join(dir, "OpenRemote", "openremote.log")
+	return filepath.Join(dir, "OpenCouchpad", "opencouchpad.log")
 }
 
 func logOutput(background bool) io.Writer {

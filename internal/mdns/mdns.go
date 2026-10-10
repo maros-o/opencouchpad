@@ -1,8 +1,8 @@
 // Package mdns is a small multicast DNS responder and service browser.
 //
 // It publishes <host>.local (A record) so phones can open http://remote.local,
-// advertises a DNS-SD service (_openremote._tcp) and discovers other
-// OpenRemote servers on the LAN. It shares UDP 5353 with avahi / the Windows
+// advertises a DNS-SD service (_opencouchpad._tcp) and discovers other
+// OpenCouchpad servers on the LAN. It shares UDP 5353 with avahi / the Windows
 // mDNS stack via SO_REUSEADDR.
 package mdns
 
@@ -21,8 +21,8 @@ import (
 	"golang.org/x/net/ipv4"
 )
 
-// ServiceType is the DNS-SD service type used by OpenRemote.
-const ServiceType = "_openremote._tcp.local."
+// ServiceType is the DNS-SD service type used by OpenCouchpad.
+const ServiceType = "_opencouchpad._tcp.local."
 
 const (
 	ttlHost    = 120
@@ -52,7 +52,7 @@ type Config struct {
 	TXT      map[string]string // extra TXT key/values
 }
 
-// Peer is another OpenRemote server discovered on the network.
+// Peer is another OpenCouchpad server discovered on the network.
 type Peer struct {
 	Instance string            `json:"name"`
 	Host     string            `json:"host"`
@@ -110,7 +110,7 @@ func (r *Responder) Host() string {
 	return r.host + ".local"
 }
 
-// Peers returns currently known OpenRemote servers (excluding this one).
+// Peers returns currently known OpenCouchpad servers (excluding this one).
 func (r *Responder) Peers() []Peer {
 	r.mu.Lock()
 	defer r.mu.Unlock()

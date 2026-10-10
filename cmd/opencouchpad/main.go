@@ -1,4 +1,4 @@
-// Command openremote turns any phone browser into a touchpad and keyboard
+// Command opencouchpad turns any phone browser into a touchpad and keyboard
 // for this computer.
 package main
 
@@ -20,11 +20,11 @@ import (
 
 	qrcode "github.com/skip2/go-qrcode"
 
-	"github.com/maros-o/openremote/internal/input"
-	"github.com/maros-o/openremote/internal/keymap"
-	"github.com/maros-o/openremote/internal/mdns"
-	"github.com/maros-o/openremote/internal/server"
-	"github.com/maros-o/openremote/web"
+	"github.com/maros-o/opencouchpad/internal/input"
+	"github.com/maros-o/opencouchpad/internal/keymap"
+	"github.com/maros-o/opencouchpad/internal/mdns"
+	"github.com/maros-o/opencouchpad/internal/server"
+	"github.com/maros-o/opencouchpad/web"
 )
 
 var version = "dev"
@@ -60,28 +60,28 @@ func parseFlags() config {
 	if i := strings.IndexByte(hostname, '.'); i > 0 {
 		hostname = hostname[:i]
 	}
-	defPort, portEnvSet := os.LookupEnv("OPENREMOTE_PORT")
+	defPort, portEnvSet := os.LookupEnv("OPENCOUCHPAD_PORT")
 	if !portEnvSet {
 		defPort = "80"
 	}
 	port, _ := strconv.Atoi(defPort)
 
-	flag.StringVar(&c.name, "name", env("OPENREMOTE_NAME", hostname), "display name shown in the UI and to other remotes")
-	flag.StringVar(&c.host, "host", env("OPENREMOTE_HOST", "remote"), "mDNS host name: <host>.local")
+	flag.StringVar(&c.name, "name", env("OPENCOUCHPAD_NAME", hostname), "display name shown in the UI and to other remotes")
+	flag.StringVar(&c.host, "host", env("OPENCOUCHPAD_HOST", "remote"), "mDNS host name: <host>.local")
 	flag.IntVar(&c.port, "port", port, "HTTP port (default 80, falls back to 8080 if 80 is unavailable)")
-	flag.StringVar(&c.listen, "listen", env("OPENREMOTE_LISTEN", ""), "listen address (default: all interfaces)")
-	flag.StringVar(&c.pin, "pin", env("OPENREMOTE_PIN", ""), "require this PIN before a phone can control the computer")
-	flag.StringVar(&c.allowedHosts, "allowed-hosts", env("OPENREMOTE_ALLOWED_HOSTS", ""), "extra comma-separated host names to accept, e.g. for a reverse proxy (.local, .lan and IPs always work)")
-	flag.StringVar(&c.layout, "layout", env("OPENREMOTE_LAYOUT", "auto"), "keyboard layout of this computer for typing on Linux (e.g. us, de, cz, cz(qwerty)); auto = detect")
-	flag.StringVar(&c.driver, "driver", env("OPENREMOTE_DRIVER", "native"), "input driver: native or dryrun (log only)")
-	flag.BoolVar(&c.mdns, "mdns", envBool("OPENREMOTE_MDNS", true), "advertise <host>.local via mDNS and discover other remotes")
-	flag.StringVar(&c.logLevel, "log-level", env("OPENREMOTE_LOG_LEVEL", "info"), "debug, info, warn or error")
+	flag.StringVar(&c.listen, "listen", env("OPENCOUCHPAD_LISTEN", ""), "listen address (default: all interfaces)")
+	flag.StringVar(&c.pin, "pin", env("OPENCOUCHPAD_PIN", ""), "require this PIN before a phone can control the computer")
+	flag.StringVar(&c.allowedHosts, "allowed-hosts", env("OPENCOUCHPAD_ALLOWED_HOSTS", ""), "extra comma-separated host names to accept, e.g. for a reverse proxy (.local, .lan and IPs always work)")
+	flag.StringVar(&c.layout, "layout", env("OPENCOUCHPAD_LAYOUT", "auto"), "keyboard layout of this computer for typing on Linux (e.g. us, de, cz, cz(qwerty)); auto = detect")
+	flag.StringVar(&c.driver, "driver", env("OPENCOUCHPAD_DRIVER", "native"), "input driver: native or dryrun (log only)")
+	flag.BoolVar(&c.mdns, "mdns", envBool("OPENCOUCHPAD_MDNS", true), "advertise <host>.local via mDNS and discover other remotes")
+	flag.StringVar(&c.logLevel, "log-level", env("OPENCOUCHPAD_LOG_LEVEL", "info"), "debug, info, warn or error")
 	flag.BoolVar(&c.showVersion, "version", false, "print version and exit")
 	flag.BoolVar(&c.background, "background", false, "run without a console window (Windows) and log to a file")
-	flag.BoolVar(&c.install, "install", false, "start OpenRemote automatically at login (Windows) with the given flags")
+	flag.BoolVar(&c.install, "install", false, "start OpenCouchpad automatically at login (Windows) with the given flags")
 	flag.BoolVar(&c.uninstall, "uninstall", false, "remove the autostart entry (Windows)")
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "OpenRemote %s — control this computer from any phone browser.\n\nUsage: openremote [flags]\n\nFlags (each also settable via OPENREMOTE_<NAME> env var):\n", version)
+		fmt.Fprintf(os.Stderr, "OpenCouchpad %s — control this computer from any phone browser.\n\nUsage: opencouchpad [flags]\n\nFlags (each also settable via OPENCOUCHPAD_<NAME> env var):\n", version)
 		flag.PrintDefaults()
 	}
 	flag.Parse()
@@ -97,7 +97,7 @@ func parseFlags() config {
 func main() {
 	c := parseFlags()
 	if c.showVersion {
-		fmt.Println("openremote", version, runtime.GOOS+"/"+runtime.GOARCH)
+		fmt.Println("opencouchpad", version, runtime.GOOS+"/"+runtime.GOARCH)
 		return
 	}
 	if c.install || c.uninstall {
@@ -250,19 +250,19 @@ func isVirtual(name string) bool {
 }
 
 func banner(c config, drv input.Driver, layout string, urls []string) {
-	slog.Info("OpenRemote started", "version", version, "name", c.name, "driver", drv.Name(), "layout", layout, "pin", c.pin != "")
+	slog.Info("OpenCouchpad started", "version", version, "name", c.name, "driver", drv.Name(), "layout", layout, "pin", c.pin != "")
 	if c.background {
 		return
 	}
 	fmt.Println()
-	fmt.Println("  ╭─ OpenRemote ─────────────────────────────────────")
+	fmt.Println("  ╭─ OpenCouchpad ─────────────────────────────────────")
 	fmt.Println("  │  Open on your phone (same Wi-Fi):")
 	for _, u := range urls {
 		fmt.Println("  │    " + u)
 	}
 	if c.pin == "" {
 		fmt.Println("  │  ⚠  No PIN set: anyone on this network can control this computer.")
-		fmt.Println("  │     Use --pin 1234 (or OPENREMOTE_PIN) on shared networks.")
+		fmt.Println("  │     Use --pin 1234 (or OPENCOUCHPAD_PIN) on shared networks.")
 	}
 	fmt.Println("  ╰──────────────────────────────────────────────────")
 	// QR for the first IP URL: works even where .local names don't resolve.

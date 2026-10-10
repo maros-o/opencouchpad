@@ -1,8 +1,8 @@
 {
-  "name": "openremote-e2e",
+  "name": "opencouchpad-e2e",
   "private": true,
   "type": "module",
-  "description": "Headless browser tests for the OpenRemote web app (see README.md).",
+  "description": "Headless browser tests for the OpenCouchpad web app (see README.md).",
   "scripts": {
     "gestures": "node gestures.mjs http://localhost:8765/ .",
     "pin": "node pin.mjs"

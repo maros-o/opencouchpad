@@ -11,7 +11,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/maros-o/openremote/internal/keymap"
+	"github.com/maros-o/opencouchpad/internal/keymap"
 )
 
 // Linux input event constants (linux/input-event-codes.h, linux/uinput.h).
@@ -146,7 +146,7 @@ type uinputDriver struct {
 
 // NewNative creates the uinput-backed driver.
 func NewNative() (Driver, error) {
-	mouse, err := newDevice("OpenRemote Mouse", 1,
+	mouse, err := newDevice("OpenCouchpad Mouse", 1,
 		[]int{evKey, evRel},
 		[]int{btnLeft, btnRight, btnMiddle, btnSide, btnExtra},
 		[]int{relX, relY, relWheel, relHWheel, relWheelHiRes, relHWheelHiRes})
@@ -167,7 +167,7 @@ func NewNative() (Driver, error) {
 			keys = append(keys, int(def.linux))
 		}
 	}
-	kbd, err := newDevice("OpenRemote Keyboard", 2, []int{evKey}, keys, nil)
+	kbd, err := newDevice("OpenCouchpad Keyboard", 2, []int{evKey}, keys, nil)
 	if err != nil {
 		mouse.close()
 		return nil, err

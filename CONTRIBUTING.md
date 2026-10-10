@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve OpenRemote!
+Thanks for helping improve OpenCouchpad!
 
 - Run `make dev` to work on the UI without moving your real mouse (dry-run driver), and `make test` before sending a PR.
 - Keep the web app dependency-free (vanilla ES modules, no build step) and the binary cgo-free.

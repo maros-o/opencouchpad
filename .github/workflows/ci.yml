@@ -40,7 +40,7 @@ jobs:
       - name: Bundle installers
         run: |
           cp deploy/windows/install.ps1 dist/install-windows.ps1
-          tar -C deploy/linux -czf dist/openremote-linux-deploy.tar.gz .
+          tar -C deploy/linux -czf dist/opencouchpad-linux-deploy.tar.gz .
       - uses: softprops/action-gh-release@v2
         with:
           files: dist/*

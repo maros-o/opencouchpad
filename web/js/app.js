@@ -69,11 +69,11 @@ const pad = new Touchpad($('#pad'), conn, {
   onUse: () => {
     if (!$('#pad').classList.contains('used')) {
       $('#pad').classList.add('used');
-      try { localStorage.setItem('openremote.used', '1'); } catch { /* ignore */ }
+      try { localStorage.setItem('opencouchpad.used', '1'); } catch { /* ignore */ }
     }
   },
 });
-try { if (localStorage.getItem('openremote.used')) $('#pad').classList.add('used'); } catch { /* ignore */ }
+try { if (localStorage.getItem('opencouchpad.used')) $('#pad').classList.add('used'); } catch { /* ignore */ }
 
 // Physical-style mouse buttons: press and hold works (drag with another finger).
 for (const el of $$('.mbtn')) {
@@ -276,7 +276,7 @@ async function loadDevices() {
     }
     $('#devices-note').textContent = peers.length
       ? 'Tap a computer to control it instead.'
-      : 'Other computers running OpenRemote on this network appear here automatically.';
+      : 'Other computers running OpenCouchpad on this network appear here automatically.';
   } catch { /* offline */ }
 }
 
@@ -354,7 +354,7 @@ function renderShare() {
   $('#urls').innerHTML = urls.map((u) => `<li>${esc(u.replace(/^http:\/\//, ''))}</li>`).join('');
   const target = urls.find((u) => !u.includes('.local')) || urls[0] || location.origin;
   $('#qr').src = `/api/qr.png?u=${encodeURIComponent(target)}`;
-  $('#about').textContent = `OpenRemote ${info.version} on ${osName(info.os)}, ${info.driver} input driver.`;
+  $('#about').textContent = `OpenCouchpad ${info.version} on ${osName(info.os)}, ${info.driver} input driver.`;
 }
 
 onChange((key) => {
@@ -376,7 +376,7 @@ conn.addEventListener('hello', (e) => {
   const h = e.detail;
   info = { ...info, ...h };
   $('#device-name').textContent = h.name;
-  document.title = `${h.name} – OpenRemote`;
+  document.title = `${h.name} – OpenCouchpad`;
   $('#meta-mod').textContent = h.os === 'windows' ? 'Win' : h.os === 'darwin' ? 'Cmd' : 'Super';
   $$('.linux-only').forEach((el) => { el.hidden = h.os !== 'linux'; });
   renderLayouts(h);

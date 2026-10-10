@@ -2,7 +2,7 @@
 // what it sends to the server (pointer deltas, clicks, scroll units, text), plus
 // phone screenshots of the states the demo shows. render.mjs turns this into frames.
 //
-//   /tmp/openremote --driver dryrun --mdns=false --port 8790 --name "Raspberry Pi" &
+//   /tmp/opencouchpad --driver dryrun --mdns=false --port 8790 --name "Raspberry Pi" &
 //   node capture.mjs [http://127.0.0.1:8790/]
 import { chromium } from 'playwright-core';
 import { mkdirSync, writeFileSync } from 'node:fs';

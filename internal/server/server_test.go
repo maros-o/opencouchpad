@@ -11,7 +11,7 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/maros-o/openremote/internal/input"
+	"github.com/maros-o/opencouchpad/internal/input"
 )
 
 type recorder struct {

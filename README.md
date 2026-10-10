@@ -1,16 +1,16 @@
-# OpenRemote
+# OpenCouchpad
 
 **Use any phone as a touchpad and keyboard for your computer. No app needed, just open `http://remote.local`.**
 
-OpenRemote is a small self-hosted server for Linux (including Raspberry Pi) and Windows. It serves a fast web remote over your Wi-Fi, so it works the same on iPhone, Android, tablets and laptops.
+OpenCouchpad is a small self-hosted server for Linux (including Raspberry Pi) and Windows. It serves a fast web remote over your Wi-Fi, so it works the same on iPhone, Android, tablets and laptops.
 
-![OpenRemote demo: a phone controls a computer on the TV, pointing, scrolling, typing and playing a video](docs/demo.gif)
+![OpenCouchpad demo: a phone controls a computer on the TV, pointing, scrolling, typing and playing a video](docs/demo.gif)
 
-![OpenRemote on a phone: touchpad, media controls, settings, light theme](docs/screenshots/overview.png)
+![OpenCouchpad on a phone: touchpad, media controls, settings, light theme](docs/screenshots/overview.png)
 
 ## Why
 
-Most remote-mouse apps are tied to one platform and need an app on every phone. OpenRemote runs in the browser instead. Install it once on the computer, and anyone at home can pick up their phone and use it.
+Most remote-mouse apps are tied to one platform and need an app on every phone. OpenCouchpad runs in the browser instead. Install it once on the computer, and anyone at home can pick up their phone and use it.
 
 - **Works in any browser.** iOS Safari, Android Chrome, Firefox, desktop browsers. You can add it to the home screen as an app.
 - **Easy to find.** The computer announces itself as `remote.local` over mDNS. There's also a QR code in the terminal and in the app.
@@ -37,25 +37,25 @@ Most remote-mouse apps are tied to one platform and need an app on every phone. 
 ### Raspberry Pi / Linux: one command
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/maros-o/openremote/main/deploy/linux/install.sh | sudo sh
+curl -fsSL https://raw.githubusercontent.com/maros-o/opencouchpad/main/deploy/linux/install.sh | sudo sh
 ```
 
 Then open **http://remote.local** on your phone (same Wi-Fi). That's it.
 
-The script downloads the right binary for your machine (Pi 3/4/5 64-bit, 32-bit Pi OS, Pi Zero, PCs), installs it to `/usr/local/bin/openremote` as a hardened systemd service that starts at boot, and loads the `uinput` module. Settings live in `/etc/default/openremote` (name, PIN, port…); after editing run `sudo systemctl restart openremote`. Logs: `journalctl -u openremote -f`. Remove with `curl -fsSL …/install.sh | sudo sh -s -- --uninstall`.
+The script downloads the right binary for your machine (Pi 3/4/5 64-bit, 32-bit Pi OS, Pi Zero, PCs), installs it to `/usr/local/bin/opencouchpad` as a hardened systemd service that starts at boot, and loads the `uinput` module. Settings live in `/etc/default/opencouchpad` (name, PIN, port…); after editing run `sudo systemctl restart opencouchpad`. Logs: `journalctl -u opencouchpad -f`. Remove with `curl -fsSL …/install.sh | sudo sh -s -- --uninstall`.
 
-Several computers on one network? Give each its own host name, e.g. `OPENREMOTE_HOST=pi` → `http://pi.local`.
+Several computers on one network? Give each its own host name, e.g. `OPENCOUCHPAD_HOST=pi` → `http://pi.local`.
 
 To update, run the same command again: it replaces the binary, keeps your settings and restarts the service.
 
 ### Raspberry Pi / Linux with Docker
 
 ```sh
-docker run -d --name openremote --restart unless-stopped \
+docker run -d --name opencouchpad --restart unless-stopped \
   --network host --device /dev/uinput \
   -v /etc/default/keyboard:/etc/default/keyboard:ro \
-  -e OPENREMOTE_NAME="Living room" \
-  ghcr.io/maros-o/openremote:latest
+  -e OPENCOUCHPAD_NAME="Living room" \
+  ghcr.io/maros-o/opencouchpad:latest
 ```
 
 Or use [`docker-compose.yml`](docker-compose.yml): `docker compose up -d`.
@@ -64,44 +64,44 @@ Or use [`docker-compose.yml`](docker-compose.yml): `docker compose up -d`.
 
 ### Linux manual install
 
-Download the binary for your machine from [Releases](https://github.com/maros-o/openremote/releases) (`linux-arm64` for Pi 3/4/5 on 64-bit OS, `linux-armv7`/`armv6` for 32-bit Pi OS, `linux-amd64` for PCs) plus `openremote-linux-deploy.tar.gz`, then:
+Download the binary for your machine from [Releases](https://github.com/maros-o/opencouchpad/releases) (`linux-arm64` for Pi 3/4/5 on 64-bit OS, `linux-armv7`/`armv6` for 32-bit Pi OS, `linux-amd64` for PCs) plus `opencouchpad-linux-deploy.tar.gz`, then:
 
 ```sh
-mkdir openremote-deploy && tar xzf openremote-linux-deploy.tar.gz -C openremote-deploy
-sudo openremote-deploy/install.sh ./openremote-linux-arm64
+mkdir opencouchpad-deploy && tar xzf opencouchpad-linux-deploy.tar.gz -C opencouchpad-deploy
+sudo opencouchpad-deploy/install.sh ./opencouchpad-linux-arm64
 ```
 
 To try it without installing:
 
 ```sh
-chmod +x openremote-linux-amd64
-sudo ./openremote-linux-amd64          # root for /dev/uinput and port 80
+chmod +x opencouchpad-linux-amd64
+sudo ./opencouchpad-linux-amd64          # root for /dev/uinput and port 80
 ```
 
-To run without root, use `deploy/linux/99-openremote-uinput.rules` and join the `input` group. Then use `--port 8080`, or allow port 80 with `sudo setcap cap_net_bind_service=+ep ./openremote`.
+To run without root, use `deploy/linux/99-opencouchpad-uinput.rules` and join the `input` group. Then use `--port 8080`, or allow port 80 with `sudo setcap cap_net_bind_service=+ep ./opencouchpad`.
 
 ### Windows
 
-1. Download `openremote-windows-amd64.exe` (or `arm64`) from [Releases](https://github.com/maros-o/openremote/releases).
+1. Download `opencouchpad-windows-amd64.exe` (or `arm64`) from [Releases](https://github.com/maros-o/opencouchpad/releases).
 2. Double-click it. Allow it through the firewall on **private networks** when Windows asks.
 3. Open `http://remote.local` on your phone. If another computer is already called `remote`, use the name shown in the console.
 
 To start it automatically at login, open a terminal next to the exe and run:
 
 ```powershell
-.\openremote-windows-amd64.exe --install --name "Office PC" --host office
+.\opencouchpad-windows-amd64.exe --install --name "Office PC" --host office
 ```
 
-Or run `install-windows.ps1` from the release; it also adds the firewall rule. Remove autostart with `--uninstall`. In background mode, logs go to `%LOCALAPPDATA%\OpenRemote\openremote.log`.
+Or run `install-windows.ps1` from the release; it also adds the firewall rule. Remove autostart with `--uninstall`. In background mode, logs go to `%LOCALAPPDATA%\OpenCouchpad\opencouchpad.log`.
 
-> Windows runs OpenRemote as a normal program in your session, not as a service. Services can't move the cursor on your desktop, and Docker on Windows can't control the host.
+> Windows runs OpenCouchpad as a normal program in your session, not as a service. Services can't move the cursor on your desktop, and Docker on Windows can't control the host.
 
 ## Using it
 
 Open the address shown at startup on a phone on the same Wi-Fi:
 
 ```
-╭─ OpenRemote ─────────────────────────────────────
+╭─ OpenCouchpad ─────────────────────────────────────
 │  Open on your phone (same Wi-Fi):
 │    http://remote.local
 │    http://192.168.1.23
@@ -127,11 +127,11 @@ Open the address shown at startup on a phone on the same Wi-Fi:
 Give each computer its own name and host:
 
 ```sh
-openremote --name "Raspberry Pi" --host pi        # http://pi.local
-openremote --name "Gaming PC"   --host gaming    # http://gaming.local
+opencouchpad --name "Raspberry Pi" --host pi        # http://pi.local
+opencouchpad --name "Gaming PC"   --host gaming    # http://gaming.local
 ```
 
-OpenRemote computers find each other on the network. Tap the computer name at the top of the app to switch. If two use the same host name, the second one automatically becomes `remote-2`.
+OpenCouchpad computers find each other on the network. Tap the computer name at the top of the app to switch. If two use the same host name, the second one automatically becomes `remote-2`.
 
 ## Configuration
 
@@ -139,28 +139,28 @@ Every flag can also be set as an environment variable (used by Docker and the sy
 
 | Flag | Env | Default | Description |
 |---|---|---|---|
-| `--name` | `OPENREMOTE_NAME` | hostname | Name shown in the app and to other computers |
-| `--host` | `OPENREMOTE_HOST` | `remote` | mDNS name, giving `http://<host>.local` |
-| `--port` | `OPENREMOTE_PORT` | `80` | HTTP port. If 80 is busy and no port was set, falls back to 8080 |
-| `--listen` | `OPENREMOTE_LISTEN` | all | Address to bind to |
-| `--pin` | `OPENREMOTE_PIN` | none | PIN required before a phone can control the computer |
-| `--allowed-hosts` | `OPENREMOTE_ALLOWED_HOSTS` | none | Extra host names to accept, e.g. `remote.example.com` behind a reverse proxy. IPs, single-word names, `.local`, `.lan` and `.home.arpa` always work |
-| `--layout` | `OPENREMOTE_LAYOUT` | `auto` | Keyboard layout of this computer (Linux typing). See below |
-| `--mdns` | `OPENREMOTE_MDNS` | `true` | Announce `<host>.local` and discover other computers |
-| `--driver` | `OPENREMOTE_DRIVER` | `native` | `native` or `dryrun` (logs input instead of sending it; for development) |
-| `--log-level` | `OPENREMOTE_LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error` |
+| `--name` | `OPENCOUCHPAD_NAME` | hostname | Name shown in the app and to other computers |
+| `--host` | `OPENCOUCHPAD_HOST` | `remote` | mDNS name, giving `http://<host>.local` |
+| `--port` | `OPENCOUCHPAD_PORT` | `80` | HTTP port. If 80 is busy and no port was set, falls back to 8080 |
+| `--listen` | `OPENCOUCHPAD_LISTEN` | all | Address to bind to |
+| `--pin` | `OPENCOUCHPAD_PIN` | none | PIN required before a phone can control the computer |
+| `--allowed-hosts` | `OPENCOUCHPAD_ALLOWED_HOSTS` | none | Extra host names to accept, e.g. `remote.example.com` behind a reverse proxy. IPs, single-word names, `.local`, `.lan` and `.home.arpa` always work |
+| `--layout` | `OPENCOUCHPAD_LAYOUT` | `auto` | Keyboard layout of this computer (Linux typing). See below |
+| `--mdns` | `OPENCOUCHPAD_MDNS` | `true` | Announce `<host>.local` and discover other computers |
+| `--driver` | `OPENCOUCHPAD_DRIVER` | `native` | `native` or `dryrun` (logs input instead of sending it; for development) |
+| `--log-level` | `OPENCOUCHPAD_LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error` |
 | `--install` / `--uninstall` | | | Windows: start at login, or stop starting at login |
 | `--background` | | | Windows: no console window; log to a file |
 
 ### Keyboard layouts (Linux)
 
-On Linux, OpenRemote types by pressing virtual keys, so it needs to know the keyboard layout the desktop uses. Otherwise a Czech or German layout would turn `z` into `y`. It reads the layout from `/etc/default/keyboard` (Debian, Raspberry Pi OS, Ubuntu) or `/etc/X11/xorg.conf.d/00-keyboard.conf` (`localectl`), and you can override it with `--layout` or per phone in *Settings > Computer keyboard layout*.
+On Linux, OpenCouchpad types by pressing virtual keys, so it needs to know the keyboard layout the desktop uses. Otherwise a Czech or German layout would turn `z` into `y`. It reads the layout from `/etc/default/keyboard` (Debian, Raspberry Pi OS, Ubuntu) or `/etc/X11/xorg.conf.d/00-keyboard.conf` (`localectl`), and you can override it with `--layout` or per phone in *Settings > Computer keyboard layout*.
 
 There are 34 built-in layouts, generated from xkeyboard-config, including AltGr symbols and dead-key accents: us, us(intl), gb, de, at, ch, fr, be, es, latam, pt, br, it, nl, se, no, dk, fi, is, pl, cz, cz(qwerty), sk, sk(qwerty), hu, si, hr, ro, tr, lt, lv, ee, and more. Windows doesn't need any of this: it types Unicode directly, so every character works with every layout.
 
 ## Security
 
-OpenRemote gives full mouse and keyboard control to anyone who can open the page.
+OpenCouchpad gives full mouse and keyboard control to anyone who can open the page.
 
 - **On a home network you trust**, the default (no PIN) is convenient.
 - **On shared, office or guest networks, set a PIN** (`--pin`). After the correct PIN, the phone stays signed in. Repeated wrong PINs lock that address out for a while.
@@ -172,26 +172,26 @@ OpenRemote gives full mouse and keyboard control to anyone who can open the page
 
 **`remote.local` doesn't open.** Most Android versions before 12 and some Wi-Fi routers don't resolve `.local` names. Use the IP address or scan the QR code from the terminal (also in *Settings > Connect another phone*), then add it to your home screen. Check that the phone isn't on a guest network that isolates clients.
 
-**The pointer feels too fast or "floaty".** Your desktop also applies its own acceleration to OpenRemote's virtual mouse. For the most precise feel, set the pointer acceleration profile to *flat* for "OpenRemote Mouse": KDE *Settings > Mouse*, GNOME Tweaks *Mouse acceleration*, Windows *Mouse > Enhance pointer precision* off. Then tune speed in the app.
+**The pointer feels too fast or "floaty".** Your desktop also applies its own acceleration to OpenCouchpad's virtual mouse. For the most precise feel, set the pointer acceleration profile to *flat* for "OpenCouchpad Mouse": KDE *Settings > Mouse*, GNOME Tweaks *Mouse acceleration*, Windows *Mouse > Enhance pointer precision* off. Then tune speed in the app.
 
 **Typed characters are wrong (Linux).** Set the layout: `--layout de`, or change it in the app's Settings. Characters that your layout can't type are reported in the app.
 
 **`open /dev/uinput: permission denied`.** Run as root, use Docker with `--device /dev/uinput`, or install the udev rule and join the `input` group. **`no such file`**: `sudo modprobe uinput`.
 
-**Windows: clicks don't work in some windows.** Windows blocks input from normal programs into apps running as administrator (UIPI). Run OpenRemote as administrator if you need to control those. The lock screen and UAC prompts can't be controlled.
+**Windows: clicks don't work in some windows.** Windows blocks input from normal programs into apps running as administrator (UIPI). Run OpenCouchpad as administrator if you need to control those. The lock screen and UAC prompts can't be controlled.
 
-**Port 80 is already in use.** OpenRemote falls back to 8080 and prints the address. You can also choose a port with `--port`.
+**Port 80 is already in use.** OpenCouchpad falls back to 8080 and prints the address. You can also choose a port with `--port`.
 
 **Scrolling goes the wrong way.** Turn off *Natural scrolling* in Settings.
 
 ## How it works
 
 ```
-phone browser ──HTTP──▶ openremote (single Go binary, no cgo)
+phone browser ──HTTP──▶ opencouchpad (single Go binary, no cgo)
                ◀──WS──▶   ├─ embedded web app (vanilla JS, ~75 KB, gzipped, no build step)
                           ├─ input: Linux /dev/uinput · Windows SendInput
                           ├─ keymap: XKB layout tables for Linux typing
-                          └─ mDNS responder: <host>.local + _openremote._tcp discovery
+                          └─ mDNS responder: <host>.local + _opencouchpad._tcp discovery
 ```
 
 - **Low latency end to end:** pointer deltas are sent as 5-byte binary WebSocket frames straight from the touch handler, not delayed to the next animation frame. The client only merges deltas when the socket's send buffer backs up, so weak Wi-Fi never causes a "replay" of stale movement. TCP_NODELAY is on. On Linux each event batch is one `write()` to uinput.
@@ -213,7 +213,7 @@ make docker    # multi-arch image with buildx
 make layouts   # regenerate keyboard layouts (needs xkbcli + xkeyboard-config)
 ```
 
-The web app lives in [`web/`](web) and is embedded into the binary. Rebuild the binary to see changes. Layout: `cmd/openremote` (CLI), `internal/input` (uinput/SendInput), `internal/keymap`, `internal/server` (HTTP + WebSocket), `internal/mdns`.
+The web app lives in [`web/`](web) and is embedded into the binary. Rebuild the binary to see changes. Layout: `cmd/opencouchpad` (CLI), `internal/input` (uinput/SendInput), `internal/keymap`, `internal/server` (HTTP + WebSocket), `internal/mdns`.
 
 Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 

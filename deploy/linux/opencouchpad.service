@@ -1,14 +1,14 @@
 [Unit]
-Description=OpenRemote - control this computer from any phone browser
-Documentation=https://github.com/maros-o/openremote
+Description=OpenCouchpad - control this computer from any phone browser
+Documentation=https://github.com/maros-o/opencouchpad
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-EnvironmentFile=-/etc/default/openremote
+EnvironmentFile=-/etc/default/opencouchpad
 ExecStartPre=-/sbin/modprobe uinput
-ExecStart=/usr/local/bin/openremote
+ExecStart=/usr/local/bin/opencouchpad
 Restart=always
 RestartSec=2
 

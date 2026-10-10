@@ -10,8 +10,8 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/maros-o/openremote/internal/input"
-	"github.com/maros-o/openremote/internal/keymap"
+	"github.com/maros-o/opencouchpad/internal/input"
+	"github.com/maros-o/opencouchpad/internal/keymap"
 )
 
 // Binary message types (little-endian payloads).
