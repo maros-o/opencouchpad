@@ -1,0 +1,31 @@
+[Unit]
+Description=OpenRemote - control this computer from any phone browser
+Documentation=https://github.com/maros-o/openremote
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/default/openremote
+ExecStartPre=-/sbin/modprobe uinput
+ExecStart=/usr/local/bin/openremote
+Restart=always
+RestartSec=2
+
+# Runs as root for /dev/uinput and port 80, but locked down otherwise.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+DevicePolicy=closed
+DeviceAllow=/dev/uinput rw
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RestrictRealtime=yes
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

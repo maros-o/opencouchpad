@@ -1,0 +1,27 @@
+import { chromium } from 'playwright-core';
+
+const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, });
+const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, colorScheme: 'dark' });
+const page = await ctx.newPage();
+const errors = [];
+page.on('pageerror', (e) => errors.push(String(e)));
+await page.goto('http://localhost:8766/');
+await page.waitForSelector('#pin:not([hidden])');
+await page.fill('#pin-input', '0000');
+await page.click('#pin-form button');
+await page.waitForFunction(() => document.querySelector('#pin-error').textContent);
+await page.screenshot({ path: (process.env.OUT || '.') + '/05-pin-wrong.png' });
+console.log('wrong:', await page.textContent('#pin-error'));
+await page.fill('#pin-input', '4321');
+await page.click('#pin-form button');
+await page.waitForFunction(() => document.querySelector('#status').dataset.state === 'online');
+console.log('online after PIN, pin hidden:', await page.isHidden('#pin'));
+await page.reload();
+await page.waitForFunction(() => document.querySelector('#status').dataset.state === 'online');
+console.log('still signed in after reload:', await page.isHidden('#pin'));
+await page.click('#device-btn');
+await page.waitForTimeout(500);
+await page.screenshot({ path: (process.env.OUT || '.') + '/06-devices.png' });
+console.log('devices:', (await page.$$eval('#devices a', (as) => as.map((a) => a.textContent + ' -> ' + a.getAttribute('href')))));
+console.log('ERRORS', errors);
+await browser.close();

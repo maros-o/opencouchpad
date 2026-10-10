@@ -1,0 +1,11 @@
+{
+  "name": "openremote-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Headless browser tests for the OpenRemote web app (see README.md).",
+  "scripts": {
+    "gestures": "node gestures.mjs http://localhost:8765/ .",
+    "pin": "node pin.mjs"
+  },
+  "devDependencies": { "playwright-core": "1.56.0" }
+}

@@ -1,0 +1,18 @@
+services:
+  openremote:
+    image: ghcr.io/maros-o/openremote:latest
+    # build: .            # or build locally
+    container_name: openremote
+    restart: unless-stopped
+    network_mode: host    # required: mDNS (remote.local) and LAN access
+    devices:
+      - /dev/uinput:/dev/uinput
+    volumes:
+      # lets OpenRemote detect the keyboard layout (Debian / Raspberry Pi OS)
+      - /etc/default/keyboard:/etc/default/keyboard:ro
+    environment:
+      OPENREMOTE_NAME: "Living room"   # shown in the UI
+      OPENREMOTE_HOST: "remote"        # → http://remote.local
+      # OPENREMOTE_PIN: "1234"         # recommended on shared networks
+      # OPENREMOTE_PORT: "8080"
+      # OPENREMOTE_LAYOUT: "us"        # override layout detection

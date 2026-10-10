@@ -1,0 +1,3 @@
+# Lets members of the "input" group use /dev/uinput, so OpenRemote can run
+# without root:  sudo usermod -aG input $USER  (then log out and back in)
+KERNEL=="uinput", SUBSYSTEM=="misc", GROUP="input", MODE="0660", OPTIONS+="static_node=uinput"

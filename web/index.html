@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#1a1f26">
+<meta name="color-scheme" content="dark light">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Remote">
+<meta name="format-detection" content="telephone=no">
+<title>OpenRemote</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M6 13.5h.01M18 13.5h.01M8.5 14.5h7"/></symbol>
+    <symbol id="i-media" viewBox="0 0 24 24"><path d="M9 7.5v9l7-4.5z"/><circle cx="12" cy="12" r="9.5"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+    <symbol id="i-devices" viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="14" height="10" rx="1.8"/><path d="M6.5 18.5h6M9.5 14.5v4"/><rect x="16" y="9" width="5.5" height="10.5" rx="1.4"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="M6 6v12M18 6l-9 6 9 6z"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="M18 6v12M6 6l9 6-9 6z"/></symbol>
+    <symbol id="i-playpause" viewBox="0 0 24 24"><path d="M4 6l8 6-8 6zM15 6v12M20 6v12"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"/></symbol>
+    <symbol id="i-voldown" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5zM16 12h4.5"/></symbol>
+    <symbol id="i-volup" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5zM16 12h5M18.5 9.5v5"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5zM16 9.5l5 5M21 9.5l-5 5"/></symbol>
+    <symbol id="i-sun-down" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 4.5v1.5M12 18v1.5M4.5 12H6M18 12h1.5"/></symbol>
+    <symbol id="i-sun-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2.5-6.5z"/><path d="M11.5 13.5L20 4"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-fwd" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+  </defs>
+</svg>
+
+<div id="app" class="app">
+  <header class="bar">
+    <button class="device" id="device-btn" aria-label="Switch computer">
+      <span class="status" id="status" data-state="connecting"></span>
+      <span class="device-name" id="device-name">Connecting…</span>
+      <span class="latency" id="latency"></span>
+    </button>
+    <div class="bar-actions">
+      <button class="icon-btn" data-sheet="devices" aria-label="Computers"><svg><use href="#i-devices"/></svg></button>
+      <button class="icon-btn" data-sheet="settings" aria-label="Settings"><svg><use href="#i-gear"/></svg></button>
+    </div>
+  </header>
+
+  <main class="surface-wrap">
+    <div class="pad" id="pad" aria-label="Touchpad">
+      <canvas class="pad-glow" id="pad-glow"></canvas>
+      <div class="pad-hint" id="pad-hint">
+        <p><b>One finger</b> moves the pointer</p>
+        <p><b>Tap</b> to click, <b>two-finger tap</b> to right-click</p>
+        <p><b>Two fingers</b> scroll</p>
+        <p><b>Double-tap and hold</b> to drag</p>
+      </div>
+      <div class="scroll-strip" id="scroll-strip" hidden></div>
+      <div class="offline" id="offline" hidden>
+        <div class="offline-card">
+          <span class="spinner"></span>
+          <p id="offline-text">Reconnecting…</p>
+        </div>
+      </div>
+    </div>
+    <div class="buttons" id="buttons">
+      <button class="mbtn" data-btn="1" aria-label="Left click"></button>
+      <button class="mbtn mid" data-btn="3" aria-label="Middle click"><span></span></button>
+      <button class="mbtn" data-btn="2" aria-label="Right click"></button>
+    </div>
+  </main>
+
+  <div class="keys-row" id="keys-row" hidden>
+    <div class="keys-scroll">
+      <button class="k" data-key="Escape">Esc</button>
+      <button class="k" data-key="Tab">Tab</button>
+      <button class="k" data-key="ArrowLeft" aria-label="Left">←</button>
+      <button class="k" data-key="ArrowUp" aria-label="Up">↑</button>
+      <button class="k" data-key="ArrowDown" aria-label="Down">↓</button>
+      <button class="k" data-key="ArrowRight" aria-label="Right">→</button>
+      <button class="k" data-key="Backspace" aria-label="Backspace">⌫</button>
+      <button class="k" data-key="Delete">Del</button>
+      <button class="k" data-key="Home">Home</button>
+      <button class="k" data-key="End">End</button>
+      <button class="k" data-key="PageUp">PgUp</button>
+      <button class="k" data-key="PageDown">PgDn</button>
+      <button class="k" data-key="Enter">Enter</button>
+      <button class="k wide" data-sheet="text">Send text…</button>
+    </div>
+  </div>
+
+  <nav class="toolbar">
+    <button class="tool" id="kb-btn" aria-label="Keyboard"><svg><use href="#i-keyboard"/></svg></button>
+    <div class="mods" id="mods">
+      <button class="mod" data-mod="Control">Ctrl</button>
+      <button class="mod" data-mod="Alt">Alt</button>
+      <button class="mod" data-mod="Shift">Shift</button>
+      <button class="mod" data-mod="Meta" id="meta-mod">Super</button>
+    </div>
+    <button class="tool" data-sheet="media" aria-label="Media"><svg><use href="#i-media"/></svg></button>
+    <button class="tool" data-sheet="shortcuts" aria-label="Shortcuts"><svg><use href="#i-grid"/></svg></button>
+  </nav>
+
+  <textarea id="kb-input" class="kb-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="enter" aria-label="Keyboard input"></textarea>
+</div>
+
+<!-- Sheets -->
+<div class="scrim" id="scrim" hidden></div>
+
+<section class="sheet" id="sheet-media" hidden aria-label="Media">
+  <div class="sheet-head"><h2>Media</h2><button class="icon-btn" data-close aria-label="Close"><svg><use href="#i-close"/></svg></button></div>
+  <div class="media">
+    <div class="media-transport">
+      <button class="mkey" data-key="MediaTrackPrevious" aria-label="Previous"><svg><use href="#i-prev"/></svg></button>
+      <button class="mkey big" data-key="MediaPlayPause" aria-label="Play or pause"><svg><use href="#i-playpause"/></svg></button>
+      <button class="mkey" data-key="MediaTrackNext" aria-label="Next"><svg><use href="#i-next"/></svg></button>
+    </div>
+    <div class="media-volume">
+      <button class="mkey" data-key="AudioVolumeDown" data-repeat aria-label="Volume down"><svg><use href="#i-voldown"/></svg></button>
+      <button class="mkey" data-key="AudioVolumeMute" aria-label="Mute"><svg><use href="#i-mute"/></svg></button>
+      <button class="mkey" data-key="AudioVolumeUp" data-repeat aria-label="Volume up"><svg><use href="#i-volup"/></svg></button>
+    </div>
+    <div class="media-extra">
+      <button class="chip" data-key="MediaStop"><svg><use href="#i-stop"/></svg>Stop</button>
+      <button class="chip" data-key="BrowserBack"><svg><use href="#i-back"/></svg>Back</button>
+      <button class="chip" data-key="BrowserForward"><svg><use href="#i-fwd"/></svg>Forward</button>
+      <button class="chip linux-only" data-key="BrightnessDown" data-repeat><svg><use href="#i-sun-down"/></svg>Dimmer</button>
+      <button class="chip linux-only" data-key="BrightnessUp" data-repeat><svg><use href="#i-sun-up"/></svg>Brighter</button>
+    </div>
+  </div>
+</section>
+
+<section class="sheet" id="sheet-shortcuts" hidden aria-label="Shortcuts">
+  <div class="sheet-head"><h2>Shortcuts</h2><button class="icon-btn" data-close aria-label="Close"><svg><use href="#i-close"/></svg></button></div>
+  <div class="shortcuts">
+    <button class="sc" data-combo="Control+c"><b>Copy</b><kbd>Ctrl C</kbd></button>
+    <button class="sc" data-combo="Control+v"><b>Paste</b><kbd>Ctrl V</kbd></button>
+    <button class="sc" data-combo="Control+x"><b>Cut</b><kbd>Ctrl X</kbd></button>
+    <button class="sc" data-combo="Control+z"><b>Undo</b><kbd>Ctrl Z</kbd></button>
+    <button class="sc" data-combo="Control+Shift+z"><b>Redo</b><kbd>Ctrl ⇧ Z</kbd></button>
+    <button class="sc" data-combo="Control+a"><b>Select all</b><kbd>Ctrl A</kbd></button>
+    <button class="sc" data-combo="Control+f"><b>Find</b><kbd>Ctrl F</kbd></button>
+    <button class="sc" data-combo="Control+t"><b>New tab</b><kbd>Ctrl T</kbd></button>
+    <button class="sc" data-combo="Control+w"><b>Close tab</b><kbd>Ctrl W</kbd></button>
+    <button class="sc" id="alt-tab"><b>Switch app</b><kbd>Alt Tab</kbd></button>
+    <button class="sc" data-combo="Alt+F4"><b>Close window</b><kbd>Alt F4</kbd></button>
+    <button class="sc" data-combo="F11"><b>Full screen</b><kbd>F11</kbd></button>
+    <button class="sc" data-combo="F5"><b>Reload</b><kbd>F5</kbd></button>
+    <button class="sc" data-combo="Control+plus"><b>Zoom in</b><kbd>Ctrl +</kbd></button>
+    <button class="sc" data-combo="Control+-"><b>Zoom out</b><kbd>Ctrl −</kbd></button>
+    <button class="sc" data-combo="Control+0"><b>Reset zoom</b><kbd>Ctrl 0</kbd></button>
+    <button class="sc" data-combo="Meta+d"><b>Show desktop</b><kbd>Super D</kbd></button>
+    <button class="sc" data-combo="Meta"><b>Start menu</b><kbd>Super</kbd></button>
+    <button class="sc" data-combo="Meta+l"><b>Lock screen</b><kbd>Super L</kbd></button>
+    <button class="sc" data-combo="PrintScreen"><b>Screenshot</b><kbd>PrtSc</kbd></button>
+  </div>
+  <h3 class="sheet-sub">Function keys</h3>
+  <div class="fkeys">
+    <button class="k" data-key="F1">F1</button><button class="k" data-key="F2">F2</button><button class="k" data-key="F3">F3</button>
+    <button class="k" data-key="F4">F4</button><button class="k" data-key="F5">F5</button><button class="k" data-key="F6">F6</button>
+    <button class="k" data-key="F7">F7</button><button class="k" data-key="F8">F8</button><button class="k" data-key="F9">F9</button>
+    <button class="k" data-key="F10">F10</button><button class="k" data-key="F11">F11</button><button class="k" data-key="F12">F12</button>
+  </div>
+</section>
+
+<section class="sheet" id="sheet-text" hidden aria-label="Send text">
+  <div class="sheet-head"><h2>Send text</h2><button class="icon-btn" data-close aria-label="Close"><svg><use href="#i-close"/></svg></button></div>
+  <p class="sheet-note">Paste a link, password or paragraph. It is typed on the computer where the cursor is.</p>
+  <textarea id="send-text" class="field" rows="5" placeholder="Paste or type here" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
+  <label class="check"><input type="checkbox" id="send-enter"> Press Enter afterwards</label>
+  <button class="primary" id="send-text-btn"><svg><use href="#i-send"/></svg>Type on computer</button>
+</section>
+
+<section class="sheet" id="sheet-devices" hidden aria-label="Computers">
+  <div class="sheet-head"><h2>Computers</h2><button class="icon-btn" data-close aria-label="Close"><svg><use href="#i-close"/></svg></button></div>
+  <ul class="devices" id="devices"></ul>
+  <p class="sheet-note" id="devices-note">Other computers running OpenRemote on this network appear here automatically.</p>
+</section>
+
+<section class="sheet" id="sheet-settings" hidden aria-label="Settings">
+  <div class="sheet-head"><h2>Settings</h2><button class="icon-btn" data-close aria-label="Close"><svg><use href="#i-close"/></svg></button></div>
+  <div class="settings">
+    <h3 class="sheet-sub">Pointer</h3>
+    <label class="range"><span>Speed <output data-for="speed"></output></span><input type="range" id="set-speed" min="0.4" max="5" step="0.1"></label>
+    <label class="range"><span>Acceleration <output data-for="accel"></output></span><input type="range" id="set-accel" min="0" max="2.5" step="0.1"></label>
+    <label class="toggle"><span>Tap to click</span><input type="checkbox" id="set-tap"></label>
+    <label class="toggle"><span>Clean tap-and-drag<small>Waits a moment after each tap, so a drag never starts with a click</small></span><input type="checkbox" id="set-cleanDrag"></label>
+    <label class="toggle"><span>Swap left and right buttons</span><input type="checkbox" id="set-lefty"></label>
+
+    <h3 class="sheet-sub">Scrolling</h3>
+    <label class="range"><span>Scroll speed <output data-for="scroll"></output></span><input type="range" id="set-scroll" min="0.5" max="8" step="0.1"></label>
+    <label class="toggle"><span>Natural scrolling</span><input type="checkbox" id="set-natural"></label>
+    <label class="toggle"><span>Momentum after flick</span><input type="checkbox" id="set-inertia"></label>
+    <label class="toggle"><span>Scroll strip on the right edge</span><input type="checkbox" id="set-strip"></label>
+    <label class="toggle"><span>Pinch to zoom (Ctrl + wheel)</span><input type="checkbox" id="set-pinch"></label>
+
+    <h3 class="sheet-sub">Keyboard & feel</h3>
+    <label class="select"><span>Computer keyboard layout</span><select id="set-layout"></select></label>
+    <label class="toggle"><span>Vibrate on click</span><input type="checkbox" id="set-haptics"></label>
+    <label class="select"><span>Theme</span>
+      <select id="set-theme"><option value="auto">Match phone</option><option value="dark">Dark</option><option value="light">Light</option></select>
+    </label>
+    <button class="secondary" id="fullscreen-btn" hidden>Full screen</button>
+
+    <h3 class="sheet-sub">Connect another phone</h3>
+    <div class="share">
+      <img id="qr" alt="QR code to open this remote" width="160" height="160">
+      <ul id="urls" class="urls"></ul>
+    </div>
+    <p class="about" id="about"></p>
+    <button class="secondary" id="reset-btn">Reset settings</button>
+  </div>
+</section>
+
+<!-- PIN -->
+<div class="pin" id="pin" hidden>
+  <form class="pin-card" id="pin-form" autocomplete="off">
+    <svg class="pin-icon"><use href="#i-lock"/></svg>
+    <h2>Enter PIN</h2>
+    <p id="pin-for">This computer asks for a PIN before it can be controlled.</p>
+    <input id="pin-input" class="field pin-field" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="32" aria-label="PIN">
+    <p class="pin-error" id="pin-error" role="alert"></p>
+    <button class="primary" type="submit">Unlock</button>
+  </form>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
