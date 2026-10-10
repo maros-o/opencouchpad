@@ -32,6 +32,18 @@ Most remote-mouse apps are tied to one platform and need an app on every phone. 
 
 ## Quick start
 
+### Raspberry Pi / Linux: one command
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/maros-o/openremote/main/deploy/linux/install.sh | sudo sh
+```
+
+Then open **http://remote.local** on your phone (same Wi-Fi). That's it.
+
+The script downloads the right binary for your machine (Pi 3/4/5 64-bit, 32-bit Pi OS, Pi Zero, PCs), installs it to `/usr/local/bin/openremote` as a hardened systemd service that starts at boot, and loads the `uinput` module. Settings live in `/etc/default/openremote` (name, PIN, port…); after editing run `sudo systemctl restart openremote`. Logs: `journalctl -u openremote -f`. Remove with `curl -fsSL …/install.sh | sudo sh -s -- --uninstall`.
+
+Several computers on one network? Give each its own host name, e.g. `OPENREMOTE_HOST=pi` → `http://pi.local`.
+
 ### Raspberry Pi / Linux with Docker
 
 ```sh
@@ -46,16 +58,14 @@ Or use [`docker-compose.yml`](docker-compose.yml): `docker compose up -d`.
 
 `--network host` is required so phones can reach the server and `remote.local` can be announced. `--device /dev/uinput` lets it create the virtual mouse and keyboard. If `/dev/uinput` is missing, run `sudo modprobe uinput` (and add `uinput` to `/etc/modules` so it loads at boot).
 
-### Linux without Docker (systemd)
+### Linux manual install
 
-Download the binary for your machine from [Releases](https://github.com/maros-o/openremote/releases) (`linux-arm64` for Pi 3/4/5 on 64-bit OS, `linux-armv7`/`armv6` for 32-bit Pi OS, `linux-amd64` for PCs), then:
+Download the binary for your machine from [Releases](https://github.com/maros-o/openremote/releases) (`linux-arm64` for Pi 3/4/5 on 64-bit OS, `linux-armv7`/`armv6` for 32-bit Pi OS, `linux-amd64` for PCs) plus `openremote-linux-deploy.tar.gz`, then:
 
 ```sh
 mkdir openremote-deploy && tar xzf openremote-linux-deploy.tar.gz -C openremote-deploy
 sudo openremote-deploy/install.sh ./openremote-linux-arm64
 ```
-
-This installs `/usr/local/bin/openremote`, a hardened systemd service and a config file at `/etc/default/openremote`. Check logs with `journalctl -u openremote -f`.
 
 To try it without installing:
 

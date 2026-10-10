@@ -3,6 +3,7 @@
 #   sudo ./install.sh                 # uses ./openremote or downloads the latest release
 #   sudo ./install.sh path/to/binary
 #   sudo ./install.sh --uninstall
+#   curl -fsSL https://raw.githubusercontent.com/maros-o/openremote/main/deploy/linux/install.sh | sudo sh
 set -eu
 
 REPO="${REPO:-maros-o/openremote}"
@@ -10,6 +11,8 @@ BIN=/usr/local/bin/openremote
 UNIT=/etc/systemd/system/openremote.service
 ENVF=/etc/default/openremote
 HERE="$(cd "$(dirname "$0")" && pwd)"
+
+fetch() { if command -v curl >/dev/null; then curl -fsSL "$1" -o "$2"; else wget -qO "$2" "$1"; fi; }
 
 [ "$(id -u)" -eq 0 ] || { echo "Please run as root (sudo $0)"; exit 1; }
 
@@ -36,7 +39,15 @@ if [ -z "$src" ]; then
   url="https://github.com/$REPO/releases/latest/download/openremote-linux-$arch"
   echo "Downloading $url"
   src="$(mktemp)"
-  if command -v curl >/dev/null; then curl -fsSL "$url" -o "$src"; else wget -qO "$src" "$url"; fi
+  fetch "$url" "$src"
+fi
+
+# Piped from curl: the service and config files aren't next to the script.
+if [ ! -f "$HERE/openremote.service" ]; then
+  HERE="$(mktemp -d)"
+  raw="https://raw.githubusercontent.com/$REPO/main/deploy/linux"
+  fetch "$raw/openremote.service" "$HERE/openremote.service"
+  fetch "$raw/openremote.env" "$HERE/openremote.env"
 fi
 
 install -m 0755 "$src" "$BIN"
