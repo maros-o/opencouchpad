@@ -133,6 +133,22 @@ opencouchpad --name "Gaming PC"   --host gaming    # http://gaming.local
 
 OpenCouchpad computers find each other on the network. Tap the computer name at the top of the app to switch. If two use the same host name, the second one automatically becomes `remote-2`.
 
+### Network and firewall
+
+The phone and the computer must be on the same network, and the phone must be able to reach the computer:
+
+| Port | Protocol | What for |
+|---|---|---|
+| `80` | TCP | The web app and its WebSocket connection (or the port you set with `--port`; `8080` if 80 was busy) |
+| `5353` | UDP (multicast `224.0.0.251`) | mDNS: announcing `remote.local` and finding other OpenCouchpad computers |
+
+Only port 80 is strictly needed. Without mDNS, open the computer's IP address or scan the QR code instead of `remote.local`.
+
+- **Linux:** the install script opens both ports if `ufw` or `firewalld` is active. For a manual setup: `sudo ufw allow 80/tcp && sudo ufw allow 5353/udp`, or `sudo firewall-cmd --permanent --add-service=http --add-service=mdns && sudo firewall-cmd --reload`.
+- **Windows:** allow OpenCouchpad on **private networks** when Windows asks (`install-windows.ps1` adds the rule for you). Your Wi-Fi must be set to *Private* in *Settings > Network & internet*. On a *Public* network Windows blocks incoming connections.
+- **Router:** guest networks and "AP/client isolation" stop devices from talking to each other. Use the main network.
+- **Testing from the computer itself:** phones resolve `.local` names out of the box, but some Linux desktops don't. If `remote.local` fails in a browser on the computer itself (e.g. on Arch), use `http://localhost`, or install `nss-mdns` and add `mdns_minimal [NOTFOUND=return]` before `resolve` on the `hosts:` line in `/etc/nsswitch.conf`.
+
 ## Configuration
 
 Every flag can also be set as an environment variable (used by Docker and the systemd config file).
@@ -170,7 +186,7 @@ OpenCouchpad gives full mouse and keyboard control to anyone who can open the pa
 
 ## Troubleshooting
 
-**`remote.local` doesn't open.** Most Android versions before 12 and some Wi-Fi routers don't resolve `.local` names. Use the IP address or scan the QR code from the terminal (also in *Settings > Connect another phone*), then add it to your home screen. Check that the phone isn't on a guest network that isolates clients.
+**`remote.local` doesn't open.** First check [Network and firewall](#network-and-firewall): try `http://<computer IP>` from the phone; if that fails too, a firewall or the router is blocking it. Most Android versions before 12 and some Wi-Fi routers don't resolve `.local` names. Use the IP address or scan the QR code from the terminal (also in *Settings > Connect another phone*), then add it to your home screen. Check that the phone isn't on a guest network that isolates clients.
 
 **The pointer feels too fast or "floaty".** Your desktop also applies its own acceleration to OpenCouchpad's virtual mouse. For the most precise feel, set the pointer acceleration profile to *flat* for "OpenCouchpad Mouse": KDE *Settings > Mouse*, GNOME Tweaks *Mouse acceleration*, Windows *Mouse > Enhance pointer precision* off. Then tune speed in the app.
 

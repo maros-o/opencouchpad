@@ -14,11 +14,28 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 
 fetch() { if command -v curl >/dev/null; then curl -fsSL "$1" -o "$2"; else wget -qO "$2" "$1"; fi; }
 
+# Open (or with "delete", close) the web port and mDNS in an active ufw / firewalld.
+firewall() {
+  del="${1:-}"
+  port="$( [ -f "$ENVF" ] && . "$ENVF"; echo "${OPENCOUCHPAD_PORT:-80}")"
+  if command -v ufw >/dev/null && ufw status 2>/dev/null | grep -q "Status: active"; then
+    ufw $del allow "$port/tcp" comment opencouchpad >/dev/null 2>&1 || ufw $del allow "$port/tcp" >/dev/null || true
+    ufw $del allow 5353/udp comment opencouchpad >/dev/null 2>&1 || ufw $del allow 5353/udp >/dev/null || true
+    if [ -n "$del" ]; then echo "ufw: removed $port/tcp and 5353/udp"; else echo "ufw: allowed $port/tcp and 5353/udp (mDNS)"; fi
+  elif command -v firewall-cmd >/dev/null && firewall-cmd --state >/dev/null 2>&1; then
+    op=add; [ -n "$del" ] && op=remove
+    firewall-cmd --permanent --$op-port="$port/tcp" --$op-service=mdns >/dev/null || true
+    firewall-cmd --reload >/dev/null || true
+    echo "firewalld: ${op} $port/tcp and mdns"
+  fi
+}
+
 [ "$(id -u)" -eq 0 ] || { echo "Please run as root (sudo $0)"; exit 1; }
 
 if [ "${1:-}" = "--uninstall" ]; then
   systemctl disable --now opencouchpad 2>/dev/null || true
   rm -f "$BIN" "$UNIT" /etc/modules-load.d/opencouchpad.conf
+  firewall delete
   systemctl daemon-reload
   echo "OpenCouchpad removed (settings kept in $ENVF)."
   exit 0
@@ -58,6 +75,7 @@ modprobe uinput || true
 systemctl daemon-reload
 systemctl enable opencouchpad
 systemctl restart opencouchpad   # also picks up a new binary when updating
+firewall
 sleep 1
 systemctl --no-pager --lines=0 status opencouchpad || true
 echo
