@@ -7,6 +7,8 @@
 
 **Use any phone as a touchpad and keyboard for your computer. No app needed, just open `http://remote.local`.**
 
+<p align="center"><img src="docs/tv.gif" width="300" alt="Moving the pointer on a TV with a phone running OpenCouchpad"></p>
+
 OpenCouchpad is a small self-hosted server for Linux (including Raspberry Pi), Windows and macOS. It serves a fast web remote over your Wi-Fi, so it works the same on iPhone, Android, tablets and laptops.
 
 ![OpenCouchpad demo: a phone controls a computer on the TV, pointing, scrolling, typing and playing a video](docs/demo.gif)
