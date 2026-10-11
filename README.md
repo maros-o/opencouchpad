@@ -99,7 +99,7 @@ To run without root, use `deploy/linux/99-opencouchpad-uinput.rules` and join th
 ### Windows
 
 1. Download `opencouchpad-windows-amd64.exe` (or `arm64`) from [Releases](https://github.com/maros-o/opencouchpad/releases).
-2. Double-click it. Allow it through the firewall on **private networks** when Windows asks.
+2. Double-click it. The exe isn't code-signed, so SmartScreen may say "Windows protected your PC": click **More info > Run anyway**. Allow it through the firewall on **private networks** when Windows asks. If your Wi-Fi is set to *Public*, phones can't connect; switch it to *Private* in Settings > Network & internet.
 3. Open `http://remote.local` on your phone. If another computer is already called `remote`, use the name shown in the console.
 
 To start it automatically at login, open a terminal next to the exe and run:
