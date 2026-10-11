@@ -71,14 +71,5 @@ func logOutput(background bool) io.Writer {
 	if !background {
 		return os.Stderr
 	}
-	p := logPath()
-	os.MkdirAll(filepath.Dir(p), 0o755)
-	if fi, err := os.Stat(p); err == nil && fi.Size() > 5<<20 {
-		os.Rename(p, p+".old")
-	}
-	f, err := os.OpenFile(p, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
-	if err != nil {
-		return io.Discard
-	}
-	return f
+	return openLog(logPath())
 }

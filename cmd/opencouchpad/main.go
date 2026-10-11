@@ -78,9 +78,9 @@ func parseFlags() config {
 	flag.StringVar(&c.logLevel, "log-level", env("OPENCOUCHPAD_LOG_LEVEL", "info"), "debug, info, warn or error")
 	flag.BoolVar(&c.showVersion, "version", false, "print version and exit")
 	flag.BoolVar(&c.detect, "detect-layout", false, "print the detected keyboard layout of the current user and exit (Linux)")
-	flag.BoolVar(&c.background, "background", false, "run without a console window (Windows) and log to a file")
-	flag.BoolVar(&c.install, "install", false, "start OpenCouchpad automatically at login (Windows) with the given flags")
-	flag.BoolVar(&c.uninstall, "uninstall", false, "remove the autostart entry (Windows)")
+	flag.BoolVar(&c.background, "background", false, "run without a console window (Windows) and log to a file (Windows, macOS)")
+	flag.BoolVar(&c.install, "install", false, "start OpenCouchpad automatically at login (Windows, macOS) with the given flags")
+	flag.BoolVar(&c.uninstall, "uninstall", false, "remove the autostart entry (Windows, macOS)")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "OpenCouchpad %s — control this computer from any phone browser.\n\nUsage: opencouchpad [flags]\n\nFlags (each also settable via OPENCOUCHPAD_<NAME> env var):\n", version)
 		flag.PrintDefaults()
@@ -246,7 +246,7 @@ func lanIPs() []string {
 }
 
 func isVirtual(name string) bool {
-	for _, p := range []string{"docker", "br-", "veth", "virbr", "vmnet", "vboxnet", "tailscale", "zt", "wg", "tun", "lxc", "cni", "flannel", "vEthernet"} {
+	for _, p := range []string{"docker", "br-", "veth", "virbr", "vmnet", "vboxnet", "tailscale", "zt", "wg", "tun", "lxc", "cni", "flannel", "vEthernet", "utun", "awdl", "llw", "bridge"} {
 		if strings.HasPrefix(name, p) {
 			return true
 		}

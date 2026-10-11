@@ -132,8 +132,8 @@
       <button class="chip" data-key="MediaStop"><svg><use href="#i-stop"/></svg>Stop</button>
       <button class="chip" data-key="BrowserBack"><svg><use href="#i-back"/></svg>Back</button>
       <button class="chip" data-key="BrowserForward"><svg><use href="#i-fwd"/></svg>Forward</button>
-      <button class="chip linux-only" data-key="BrightnessDown" data-repeat><svg><use href="#i-sun-down"/></svg>Dimmer</button>
-      <button class="chip linux-only" data-key="BrightnessUp" data-repeat><svg><use href="#i-sun-up"/></svg>Brighter</button>
+      <button class="chip brightness" data-key="BrightnessDown" data-repeat><svg><use href="#i-sun-down"/></svg>Dimmer</button>
+      <button class="chip brightness" data-key="BrightnessUp" data-repeat><svg><use href="#i-sun-up"/></svg>Brighter</button>
     </div>
   </div>
 </section>
@@ -141,26 +141,26 @@
 <section class="sheet" id="sheet-shortcuts" hidden aria-label="Shortcuts">
   <div class="sheet-head"><h2>Shortcuts</h2><button class="icon-btn" data-close aria-label="Close"><svg><use href="#i-close"/></svg></button></div>
   <div class="shortcuts">
-    <button class="sc" data-combo="Control+c"><b>Copy</b><kbd>Ctrl C</kbd></button>
-    <button class="sc" data-combo="Control+v"><b>Paste</b><kbd>Ctrl V</kbd></button>
-    <button class="sc" data-combo="Control+x"><b>Cut</b><kbd>Ctrl X</kbd></button>
-    <button class="sc" data-combo="Control+z"><b>Undo</b><kbd>Ctrl Z</kbd></button>
-    <button class="sc" data-combo="Control+Shift+z"><b>Redo</b><kbd>Ctrl ⇧ Z</kbd></button>
-    <button class="sc" data-combo="Control+a"><b>Select all</b><kbd>Ctrl A</kbd></button>
-    <button class="sc" data-combo="Control+f"><b>Find</b><kbd>Ctrl F</kbd></button>
-    <button class="sc" data-combo="Control+t"><b>New tab</b><kbd>Ctrl T</kbd></button>
-    <button class="sc" data-combo="Control+w"><b>Close tab</b><kbd>Ctrl W</kbd></button>
-    <button class="sc" id="alt-tab"><b>Switch app</b><kbd>Alt Tab</kbd></button>
-    <button class="sc" data-combo="Alt+F4"><b>Close window</b><kbd>Alt F4</kbd></button>
-    <button class="sc" data-combo="F11"><b>Full screen</b><kbd>F11</kbd></button>
-    <button class="sc" data-combo="F5"><b>Reload</b><kbd>F5</kbd></button>
-    <button class="sc" data-combo="Control+plus"><b>Zoom in</b><kbd>Ctrl +</kbd></button>
-    <button class="sc" data-combo="Control+-"><b>Zoom out</b><kbd>Ctrl −</kbd></button>
-    <button class="sc" data-combo="Control+0"><b>Reset zoom</b><kbd>Ctrl 0</kbd></button>
-    <button class="sc" data-combo="Meta+d"><b>Show desktop</b><kbd>Super D</kbd></button>
-    <button class="sc" data-combo="Meta"><b>Start menu</b><kbd>Super</kbd></button>
-    <button class="sc" data-combo="Meta+l"><b>Lock screen</b><kbd>Super L</kbd></button>
-    <button class="sc" data-combo="PrintScreen"><b>Screenshot</b><kbd>PrtSc</kbd></button>
+    <button class="sc" data-combo="Control+c" data-mac="Meta+c" data-mac-kbd="⌘ C"><b>Copy</b><kbd>Ctrl C</kbd></button>
+    <button class="sc" data-combo="Control+v" data-mac="Meta+v" data-mac-kbd="⌘ V"><b>Paste</b><kbd>Ctrl V</kbd></button>
+    <button class="sc" data-combo="Control+x" data-mac="Meta+x" data-mac-kbd="⌘ X"><b>Cut</b><kbd>Ctrl X</kbd></button>
+    <button class="sc" data-combo="Control+z" data-mac="Meta+z" data-mac-kbd="⌘ Z"><b>Undo</b><kbd>Ctrl Z</kbd></button>
+    <button class="sc" data-combo="Control+Shift+z" data-mac="Meta+Shift+z" data-mac-kbd="⌘ ⇧ Z"><b>Redo</b><kbd>Ctrl ⇧ Z</kbd></button>
+    <button class="sc" data-combo="Control+a" data-mac="Meta+a" data-mac-kbd="⌘ A"><b>Select all</b><kbd>Ctrl A</kbd></button>
+    <button class="sc" data-combo="Control+f" data-mac="Meta+f" data-mac-kbd="⌘ F"><b>Find</b><kbd>Ctrl F</kbd></button>
+    <button class="sc" data-combo="Control+t" data-mac="Meta+t" data-mac-kbd="⌘ T"><b>New tab</b><kbd>Ctrl T</kbd></button>
+    <button class="sc" data-combo="Control+w" data-mac="Meta+w" data-mac-kbd="⌘ W"><b>Close tab</b><kbd>Ctrl W</kbd></button>
+    <button class="sc" id="alt-tab" data-mac-kbd="⌘ Tab"><b>Switch app</b><kbd>Alt Tab</kbd></button>
+    <button class="sc" data-combo="Alt+F4" data-mac="Meta+q" data-mac-kbd="⌘ Q" data-mac-name="Quit app"><b>Close window</b><kbd>Alt F4</kbd></button>
+    <button class="sc" data-combo="F11" data-mac="Control+Meta+f" data-mac-kbd="⌃ ⌘ F"><b>Full screen</b><kbd>F11</kbd></button>
+    <button class="sc" data-combo="F5" data-mac="Meta+r" data-mac-kbd="⌘ R"><b>Reload</b><kbd>F5</kbd></button>
+    <button class="sc" data-combo="Control+plus" data-mac="Meta+plus" data-mac-kbd="⌘ +"><b>Zoom in</b><kbd>Ctrl +</kbd></button>
+    <button class="sc" data-combo="Control+-" data-mac="Meta+-" data-mac-kbd="⌘ −"><b>Zoom out</b><kbd>Ctrl −</kbd></button>
+    <button class="sc" data-combo="Control+0" data-mac="Meta+0" data-mac-kbd="⌘ 0"><b>Reset zoom</b><kbd>Ctrl 0</kbd></button>
+    <button class="sc" data-combo="Meta+d" data-mac="F11" data-mac-kbd="F11"><b>Show desktop</b><kbd>Super D</kbd></button>
+    <button class="sc" data-combo="Meta" data-mac="Meta+Space" data-mac-kbd="⌘ Space" data-mac-name="Spotlight"><b>Start menu</b><kbd>Super</kbd></button>
+    <button class="sc" data-combo="Meta+l" data-mac="Control+Meta+q" data-mac-kbd="⌃ ⌘ Q"><b>Lock screen</b><kbd>Super L</kbd></button>
+    <button class="sc" data-combo="PrintScreen" data-mac="Meta+Shift+3" data-mac-kbd="⌘ ⇧ 3"><b>Screenshot</b><kbd>PrtSc</kbd></button>
   </div>
   <h3 class="sheet-sub">Function keys</h3>
   <div class="fkeys">

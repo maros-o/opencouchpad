@@ -7,7 +7,7 @@
 
 **Use any phone as a touchpad and keyboard for your computer. No app needed, just open `http://remote.local`.**
 
-OpenCouchpad is a small self-hosted server for Linux (including Raspberry Pi) and Windows. It serves a fast web remote over your Wi-Fi, so it works the same on iPhone, Android, tablets and laptops.
+OpenCouchpad is a small self-hosted server for Linux (including Raspberry Pi), Windows and macOS. It serves a fast web remote over your Wi-Fi, so it works the same on iPhone, Android, tablets and laptops.
 
 ![OpenCouchpad demo: a phone controls a computer on the TV, pointing, scrolling, typing and playing a video](docs/demo.gif)
 
@@ -18,7 +18,7 @@ Most remote-mouse apps are tied to one platform and need an app on every phone. 
 - **Works in any browser.** iOS Safari, Android Chrome, Firefox, desktop browsers. You can add it to the home screen as an app.
 - **Easy to find.** The computer announces itself as `remote.local` over mDNS. There's also a QR code in the terminal and in the app.
 - **Fast and precise.** Binary WebSocket messages, no batching delay, sub-pixel accumulation, a tuned acceleration curve and hi-res smooth scrolling.
-- **Several computers.** Run it on your Pi, desktop and Windows PC; each phone can switch between them from the app.
+- **Several computers.** Run it on your Pi, desktop, Windows PC and Mac; each phone can switch between them from the app.
 - **Self-hosted and private.** One ~7 MB static binary or a `scratch` Docker image. No cloud, no accounts, no telemetry. Optional PIN.
 
 ### Compared to other remotes
@@ -36,7 +36,7 @@ Most remote-mouse apps are tied to one platform and need an app on every phone. 
 | **Keyboard** | Your phone's own keyboard: every key appears on the computer as you type, including autocorrect, swipe typing and accents. Plus a row of Esc/Tab/arrow/Home/End/PgUp/PgDn/Del keys with auto-repeat |
 | **Modifiers** | Sticky Ctrl / Alt / Shift / Super. Tap once for the next action, twice to lock. They also work with clicks (Ctrl+click, Shift+click) |
 | **Send text** | Paste a link or paragraph on the phone and have it typed on the computer |
-| **Media** | Play/pause, previous/next, volume, mute, browser back/forward, screen brightness (Linux) |
+| **Media** | Play/pause, previous/next, volume, mute, browser back/forward, screen brightness (Linux, macOS) |
 | **Shortcuts** | Copy, paste, undo, redo, Alt+Tab app switcher, close window, full screen, zoom, show desktop, lock screen, function keys |
 | **Comfort** | Pointer speed, acceleration and scroll speed sliders, natural scrolling, left-handed mode, haptics (Android), dark and light themes, portrait and landscape layouts |
 | **Safety** | Nothing stays pressed: if a phone disconnects mid-drag, the server releases every button and key it was holding |
@@ -112,6 +112,20 @@ Or run `install-windows.ps1` from the release; it also adds the firewall rule. R
 
 > Windows runs OpenCouchpad as a normal program in your session, not as a service. Services can't move the cursor on your desktop, and Docker on Windows can't control the host.
 
+### macOS
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/maros-o/opencouchpad/main/deploy/macos/install.sh | sh
+```
+
+No sudo needed. The script downloads the right binary (Apple Silicon or Intel) to `~/Library/Application Support/OpenCouchpad` and adds a login item that starts it now and at every login. Pass flags after `sh -s --`, e.g. `... | sh -s -- --name "Mac mini" --host mac`.
+
+macOS then asks you to allow **Accessibility** access for `opencouchpad`; without it, macOS silently ignores the mouse and keyboard input (the app tells you so). Allow it in *System Settings > Privacy & Security > Accessibility*, then restart OpenCouchpad with `launchctl kickstart -k gui/$(id -u)/io.github.maros-o.opencouchpad`. After an update, macOS may ask again.
+
+To try it without installing, download `opencouchpad-darwin-arm64` (or `amd64` for Intel Macs) from [Releases](https://github.com/maros-o/opencouchpad/releases), then run `chmod +x opencouchpad-darwin-arm64 && xattr -d com.apple.quarantine opencouchpad-darwin-arm64; ./opencouchpad-darwin-arm64`. Started from Terminal, it's *Terminal* that needs Accessibility access. Logs of the login item: `~/Library/Logs/OpenCouchpad/opencouchpad.log`. Uninstall: `... | sh -s -- --uninstall`.
+
+On a Mac, the app's shortcuts use Cmd (Copy is ⌘C, Switch app is ⌘Tab, and so on).
+
 ## Using it
 
 Open the address shown at startup on a phone on the same Wi-Fi:
@@ -164,6 +178,7 @@ Only port 80 is strictly needed. Without mDNS, open the computer's IP address or
 
 - **Linux:** the install script opens both ports if `ufw` or `firewalld` is active. For a manual setup: `sudo ufw allow 80/tcp && sudo ufw allow 5353/udp`, or `sudo firewall-cmd --permanent --add-service=http --add-service=mdns && sudo firewall-cmd --reload`.
 - **Windows:** allow OpenCouchpad on **private networks** when Windows asks (`install-windows.ps1` adds the rule for you). Your Wi-Fi must be set to *Private* in *Settings > Network & internet*. On a *Public* network Windows blocks incoming connections.
+- **macOS:** if the firewall is on (*System Settings > Network > Firewall*), allow incoming connections for `opencouchpad` when asked.
 - **Router:** guest networks and "AP/client isolation" stop devices from talking to each other. Use the main network.
 - **Phones:** iPhones and Android 12+ open `.local` names. On older Android versions, use the IP address or the QR code.
 - **Testing from the computer itself:** some Linux desktops (e.g. Arch) don't resolve `.local` names in the browser. Use `http://localhost`, or install `nss-mdns` and add `mdns_minimal [NOTFOUND=return]` before `resolve` on the `hosts:` line in `/etc/nsswitch.conf`.
@@ -185,8 +200,8 @@ Every flag can also be set as an environment variable (used by Docker and the sy
 | `--driver` | `OPENCOUCHPAD_DRIVER` | `native` | `native` or `dryrun` (logs input instead of sending it; for development) |
 | `--log-level` | `OPENCOUCHPAD_LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error` |
 | `--detect-layout` | | | Print the keyboard layout detected for the current user and exit |
-| `--install` / `--uninstall` | | | Windows: start at login, or stop starting at login |
-| `--background` | | | Windows: no console window; log to a file |
+| `--install` / `--uninstall` | | | Windows, macOS: start at login, or stop starting at login |
+| `--background` | | | Windows, macOS: no console window; log to a file |
 
 ### Keyboard layouts (Linux)
 
@@ -198,7 +213,7 @@ On Linux, OpenCouchpad types by pressing virtual keys, so it needs to know the k
 
 The systemd service can't read home directories, so the install script detects the layout as the user who ran `sudo` and saves it as `OPENCOUCHPAD_LAYOUT`. You can always override it with `--layout`, or per phone in *Settings > Computer keyboard layout*.
 
-There are 34 built-in layouts, generated from xkeyboard-config, including AltGr symbols and dead-key accents: us, us(intl), gb, de, at, ch, fr, be, es, latam, pt, br, it, nl, se, no, dk, fi, is, pl, cz, cz(qwerty), sk, sk(qwerty), hu, si, hr, ro, tr, lt, lv, ee, and more. Windows doesn't need any of this: it types Unicode directly, so every character works with every layout.
+There are 34 built-in layouts, generated from xkeyboard-config, including AltGr symbols and dead-key accents: us, us(intl), gb, de, at, ch, fr, be, es, latam, pt, br, it, nl, se, no, dk, fi, is, pl, cz, cz(qwerty), sk, sk(qwerty), hu, si, hr, ro, tr, lt, lv, ee, and more. Windows and macOS don't need any of this: they type Unicode directly, so every character works with every layout.
 
 ## Security
 
@@ -228,14 +243,14 @@ OpenCouchpad gives full mouse and keyboard control to anyone who can open the pa
 
 ## Status
 
-Linux is tested on a KDE Plasma (Wayland) desktop with a real phone, and the gestures are covered by automated browser tests. Raspberry Pi and Windows builds are released for every version but have had less real-world testing so far. If something doesn't work on your setup, please [open an issue](https://github.com/maros-o/opencouchpad/issues).
+Linux is tested on a KDE Plasma (Wayland) desktop with a real phone, and the gestures are covered by automated browser tests. Windows is tested with a real phone too. Raspberry Pi builds have had less real-world testing so far, and **macOS support is new and not yet tested on real hardware**: reports from Mac users are very welcome. If something doesn't work on your setup, please [open an issue](https://github.com/maros-o/opencouchpad/issues).
 
 ## How it works
 
 ```
 phone browser ──HTTP──▶ opencouchpad (single Go binary, no cgo)
                ◀──WS──▶   ├─ embedded web app (vanilla JS, ~75 KB, gzipped, no build step)
-                          ├─ input: Linux /dev/uinput · Windows SendInput
+                          ├─ input: Linux /dev/uinput · Windows SendInput · macOS CGEvent
                           ├─ keymap: XKB layout tables for Linux typing
                           └─ mDNS responder: <host>.local + _opencouchpad._tcp discovery
 ```

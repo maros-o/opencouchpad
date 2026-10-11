@@ -11,7 +11,7 @@ Replace the Android-only "Linux Remote" app: any phone (iPhone, Android, tablet,
 Requirements from the owner:
 - Works from **any browser** (iOS Safari, Android Chrome) — no app install.
 - Reachable as `remote.local` on Wi-Fi (mDNS).
-- Server runs on **Linux (Raspberry Pi, desktops)** and **Windows**. Multiple servers on one LAN.
+- Server runs on **Linux (Raspberry Pi, desktops)**, **Windows** and **macOS**. Multiple servers on one LAN.
 - **Very optimized, responsive, precise** — mouse is the #1 priority.
 - Open-source, self-hosted, **Docker ready**, great README, modern UI.
 
@@ -21,14 +21,22 @@ Requirements from the owner:
 phone browser ──HTTP──▶ opencouchpad (Go, single static binary)
                ◀─WS──▶   ├─ embedded web UI (vanilla JS, no build step)
                          ├─ WebSocket: binary frames for move/scroll, JSON for the rest
-                         ├─ input drivers: linux=uinput, windows=SendInput, dryrun=log
+                         ├─ input drivers: linux=uinput, windows=SendInput, darwin=CGEvent, dryrun=log
                          ├─ keymap: XKB layout tables (generated) for Linux text typing
                          └─ mDNS responder: <host>.local A record + _opencouchpad._tcp service + peer discovery
 ```
 
-- **Language:** Go (CGO_ENABLED=0) → trivial cross-compile (linux amd64/arm64/armv7/armv6, windows amd64/arm64), tiny Docker image (`scratch`).
+- **Language:** Go (CGO_ENABLED=0) → trivial cross-compile (linux amd64/arm64/armv7/armv6, windows amd64/arm64, darwin arm64/amd64), tiny Docker image (`scratch`).
 - **Linux input:** `/dev/uinput` via raw ioctls (no cgo). Works on X11 *and* Wayland, console too. Separate virtual mouse + keyboard devices. Hi-res wheel (`REL_WHEEL_HI_RES`) for smooth scrolling.
 - **Windows input:** `user32!SendInput` via syscall. Text uses `KEYEVENTF_UNICODE` (layout independent). Combos use `VkKeyScanW`.
+- **macOS input:** CoreGraphics `CGEventPost` via `github.com/ebitengine/purego` (still no cgo). Needs the Accessibility
+  permission (prompted at start; without it events are dropped silently, so the driver returns an error the UI shows).
+  Pointer moves are absolute (current position + delta, clamped to the displays) with delta fields set; clicks carry
+  `clickState` for double-clicks; held modifiers are tracked and set as flags on every event. Shortcut chars resolve via
+  `UCKeyTranslate` on the current layout (read once at start, on the main thread: TIS calls crash elsewhere on macOS 14+),
+  text uses Unicode string events, media/brightness keys are `NSEvent` system-defined events. Autostart is a LaunchAgent.
+  The web UI swaps shortcuts to Cmd variants (`data-mac` attributes) when the server's os is `darwin`.
+  **Not yet tested on real hardware.**
 - **Linux text typing:** uinput only sends keycodes, so text → keycodes depends on the active XKB layout.
   `tools/genlayouts.py` uses `xkbcli compile-keymap` + `xkbcommon-keysyms.h` to generate exact tables
   (incl. AltGr levels and dead-key compositions) → `internal/keymap/layouts_gen.go`.
@@ -70,6 +78,7 @@ Status: **v1 feature-complete** (2026-10-10).
 - [x] input: Linux uinput (separate mouse + keyboard devices, hi-res wheel, restricted key bits — no power/rfkill)
 - [x] input: Windows SendInput (Unicode text, VkKeyScan combos, scan codes, extended keys)
 - [x] input: dryrun driver
+- [x] input: macOS CGEvent via purego (layout-aware shortcut keys, Unicode text, media keys, double-click state), LaunchAgent `--install`, `deploy/macos/install.sh`, Cmd shortcuts in UI
 - [x] keymap generator (`tools/genlayouts.py`) → 34 layouts incl. AltGr + dead keys; auto-detect; tests
 - [x] server: static (gzip + ETag), WS protocol, release-on-disconnect, PIN auth + lockout, peers, QR, Host allowlist (anti DNS-rebinding)
 - [x] mDNS: A record, probing/conflict rename, DNS-SD service, peer browse (prefers LAN over VPN addrs), goodbye
@@ -82,18 +91,20 @@ Status: **v1 feature-complete** (2026-10-10).
 - [x] README, LICENSE (MIT), CONTRIBUTING, screenshots
 
 ### Verification done
-- `go test -race ./...` (keymap, mdns, server protocol/auth/host check), `go vet` incl. GOOS=windows.
-- Cross-compiled linux amd64/arm64/armv7/armv6, windows amd64/arm64/386.
+- `go test -race ./...` (keymap, mdns, server protocol/auth/host check), `go vet` incl. GOOS=windows and GOOS=darwin.
+- Cross-compiled linux amd64/arm64/armv7/armv6, windows amd64/arm64/386, darwin arm64/amd64.
+- Windows runtime tested by the owner with a real phone (2026-10-11).
 - Headless Chromium (playwright, mobile emulation, CDP touch events): every gesture, keyboard diff, shortcuts,
   clean-drag, modifiers, PIN flow, device switcher — scripts in `test/e2e/`.
 - Real `/dev/uinput` on the dev machine (KDE Wayland): devices created, motion accepted.
 - mDNS: `avahi-resolve -n <host>.local` and `avahi-browse _opencouchpad._tcp` see the server; two servers discover each other.
 
-### Not verified yet (owner will test Windows before announcing)
-- Windows runtime (only compiled), Docker build (docker not installed), real iPhone/Android devices.
+### Not verified yet
+- macOS runtime (only compiled; no Mac available): purego struct calls, Accessibility prompt, media-key NSEvents,
+  mDNS next to mDNSResponder, LaunchAgent install. Docker build (docker not installed).
 
 ### Ideas / next
-- macOS driver (CGEvent via purego, no cgo), optional HTTPS (wake lock, clipboard), gyro air-mouse, custom buttons.
+- macOS: pinch-zoom sends Ctrl+wheel (accessibility zoom on a Mac); consider Cmd+/- there. Optional HTTPS (wake lock, clipboard), gyro air-mouse, custom buttons.
 - Run `test/e2e` in CI.
 - Repo: https://github.com/maros-o/opencouchpad (module `github.com/maros-o/opencouchpad`). Renamed from OpenRemote in v0.2.0 (name taken by an IoT platform).
 

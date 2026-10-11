@@ -1,10 +1,10 @@
-//go:build !linux && !windows
+//go:build !linux && !windows && !darwin
 
 package input
 
 import "errors"
 
-// NewNative is not implemented on this platform yet (macOS is on the roadmap).
+// NewNative is not implemented on this platform yet.
 func NewNative() (Driver, error) {
 	return nil, errors.New("native input is not supported on this OS yet; use --driver dryrun")
 }

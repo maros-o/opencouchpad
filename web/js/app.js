@@ -183,9 +183,26 @@ function flash(el) {
   setTimeout(() => el.classList.remove('on'), 160);
 }
 
+// On a Mac the shortcuts use Cmd. The original labels are kept to switch back
+// when the phone moves to another computer.
+let isMac = false;
+for (const el of $$('[data-mac-kbd]')) {
+  el.dataset.kbd = el.querySelector('kbd').textContent;
+  el.dataset.name = el.querySelector('b').textContent;
+}
+function applyOS(os) {
+  isMac = os === 'darwin';
+  for (const el of $$('[data-mac-kbd]')) {
+    el.querySelector('kbd').textContent = isMac ? el.dataset.macKbd : el.dataset.kbd;
+    el.querySelector('b').textContent = (isMac && el.dataset.macName) || el.dataset.name;
+  }
+  $$('.brightness').forEach((el) => { el.hidden = os !== 'linux' && !isMac; });
+}
+
 for (const el of $$('[data-combo]')) {
   el.addEventListener('click', () => {
-    const parts = el.dataset.combo.split('+').map((p) => (p === 'plus' ? '+' : p));
+    const combo = (isMac && el.dataset.mac) || el.dataset.combo;
+    const parts = combo.split('+').map((p) => (p === 'plus' ? '+' : p));
     const key = parts.pop();
     conn.key(key, 'tap', parts);
     haptic();
@@ -198,14 +215,18 @@ for (const el of $$('[data-combo]')) {
 {
   const el = $('#alt-tab');
   let timer = 0;
+  let mod = 'Alt';
   el.addEventListener('click', () => {
-    if (!timer) conn.key('Alt', 'down');
+    if (!timer) {
+      mod = isMac ? 'Meta' : 'Alt';
+      conn.key(mod, 'down');
+    }
     clearTimeout(timer);
     conn.key('Tab');
     haptic();
     el.classList.add('on');
     timer = setTimeout(() => {
-      conn.key('Alt', 'up');
+      conn.key(mod, 'up');
       el.classList.remove('on');
       timer = 0;
     }, 1300);
@@ -378,7 +399,7 @@ conn.addEventListener('hello', (e) => {
   $('#device-name').textContent = h.name;
   document.title = `${h.name} – OpenCouchpad`;
   $('#meta-mod').textContent = h.os === 'windows' ? 'Win' : h.os === 'darwin' ? 'Cmd' : 'Super';
-  $$('.linux-only').forEach((el) => { el.hidden = h.os !== 'linux'; });
+  applyOS(h.os);
   renderLayouts(h);
   if (settings.layout !== 'auto') conn.json({ t: 'layout', v: settings.layout });
 });

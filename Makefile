@@ -1,7 +1,7 @@
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -s -w -X main.version=$(VERSION)
 GOBUILD := CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)"
-TARGETS := linux/amd64 linux/arm64 linux/arm/7 linux/arm/6 windows/amd64 windows/arm64
+TARGETS := linux/amd64 linux/arm64 linux/arm/7 linux/arm/6 windows/amd64 windows/arm64 darwin/arm64 darwin/amd64
 
 .PHONY: build run dev test lint dist docker layouts clean
 
