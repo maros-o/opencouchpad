@@ -9,7 +9,7 @@
 
 <p align="center"><img src="docs/tv.gif" width="300" alt="Moving the pointer on a TV with a phone running OpenCouchpad"></p>
 
-OpenCouchpad is a small self-hosted server for Linux (including Raspberry Pi), Windows and macOS. It serves a fast web remote over your Wi-Fi, so it works the same on iPhone, Android, tablets and laptops.
+OpenCouchpad is a tiny, lightweight self-hosted server for Linux (including Raspberry Pi), Windows and macOS. It serves a fast web remote over your Wi-Fi, so it works the same on iPhone, Android, tablets and laptops.
 
 ![OpenCouchpad demo: a phone controls a computer on the TV, pointing, scrolling, typing and playing a video](docs/demo.gif)
 
@@ -21,13 +21,14 @@ Most remote-mouse apps are tied to one platform and need an app on every phone. 
 - **Easy to find.** The computer announces itself as `remote.local` over mDNS. There's also a QR code in the terminal and in the app.
 - **Fast and precise.** Binary WebSocket messages, no batching delay, sub-pixel accumulation, a tuned acceleration curve and hi-res smooth scrolling.
 - **Several computers.** Run it on your Pi, desktop, Windows PC and Mac; each phone can switch between them from the app.
-- **Self-hosted and private.** One ~7 MB static binary or a `scratch` Docker image. No cloud, no accounts, no telemetry. Optional PIN.
+- **Lightweight.** One ~8 MB static binary with no dependencies, or a `scratch` Docker image. The web app is ~75 KB gzipped: plain JavaScript, no frameworks. It uses under 18 MB of RAM, small enough for a Pi Zero.
+- **Self-hosted and private.** No cloud, no accounts, no telemetry. Optional PIN.
 
 ### Compared to other remotes
 
 - **KDE Connect** does much more (notifications, files, clipboard), but needs its app on every phone and its daemon on the computer. OpenCouchpad does one thing, touchpad and keyboard, and the phone only needs a browser.
 - **Unified Remote, Remote Mouse:** an app on every phone, closed source, and some features need the paid version.
-- **Linux Remote** and similar apps: Android only.
+- **Linux Remote** and similar apps: Android only, and full of ads.
 
 ## Features
 
@@ -293,7 +294,6 @@ Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 
-- macOS server (CGEvent)
 - Optional HTTPS for screen wake lock and clipboard sync
 - Air mouse (gyroscope) mode
 - Custom shortcut buttons
