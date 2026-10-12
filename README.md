@@ -84,7 +84,7 @@ To just try it: `sudo ./opencouchpad-linux-amd64`. To run without root, install 
 
 To start it at login, run `.\opencouchpad-windows-amd64.exe --install --name "Office PC"` (or `install-windows.ps1` from the release, which also adds the firewall rule). Undo with `--uninstall`. Logs: `%LOCALAPPDATA%\OpenCouchpad\opencouchpad.log`.
 
-### macOS
+### macOS (experimental)
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/maros-o/opencouchpad/main/deploy/macos/install.sh | sh
@@ -130,7 +130,7 @@ Every flag also works as an environment variable (Docker, `/etc/default/opencouc
 
 ## Security
 
-Anyone who can open the page controls your mouse and keyboard.
+Anyone who can open the page controls your mouse and keyboard, but can't see your screen.
 
 - On a trusted home network, no PIN is fine. **On shared networks, set `--pin`.** Wrong PINs are rate-limited.
 - Unknown host names are rejected, which blocks DNS rebinding.
@@ -157,10 +157,6 @@ Anyone who can open the page controls your mouse and keyboard.
 **Windows: clicks don't work in some windows.** Apps running as administrator ignore input from normal programs. Run OpenCouchpad as administrator to control them.
 
 **Testing on the Linux computer itself.** Some distros don't resolve `.local` in the browser; use `http://localhost`, or install `nss-mdns`.
-
-## Status
-
-Tested with real phones on Linux (KDE Plasma, Wayland) and Windows; gestures have automated browser tests. Raspberry Pi has had less real-world testing, and **macOS is new and untested on real hardware**. Reports are very welcome: [open an issue](https://github.com/maros-o/opencouchpad/issues).
 
 ## How it works
 
