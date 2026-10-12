@@ -154,7 +154,7 @@ Open the address shown at startup on a phone on the same Wi-Fi:
 
 **Typing:** tap the keyboard button in the bottom row. Your phone's keyboard opens, and every key goes to the computer as you press it, including backspace and Enter. The row above it has Esc, Tab, arrows and more; at its end, *Send text…* lets you paste a longer text in one go. Tap the keyboard button again to close it.
 
-**Tip:** on iPhone, tap *Share > Add to Home Screen* for a full-screen app. On Android, use *Add to Home screen* or *Install app*.
+**Tip:** on iPhone, tap *Share > Add to Home Screen* for a full-screen app. On Android, Chrome only offers *Add to Home screen*, which opens as a normal browser tab. To get a real app, see *No Install app* in [Troubleshooting](#troubleshooting).
 
 ### Several computers
 
@@ -230,6 +230,17 @@ OpenCouchpad gives full mouse and keyboard control to anyone who can open the pa
 ## Troubleshooting
 
 **`remote.local` doesn't open.** Try `http://<computer IP>` from the phone (it's printed at startup and shown in *Settings > Connect another phone*). If the IP works, only `.local` names fail on that phone: keep using the IP and add it to the home screen. If the IP fails too, a firewall or the router is blocking it; see [Network and firewall](#network-and-firewall).
+
+**No *Install app* on Android / desktop Chrome.** Chrome offers *Install app* only for HTTPS sites, and OpenCouchpad runs on plain HTTP on your LAN. Without it you only get *Add to Home screen*, which opens in a browser tab with the address bar showing. iPhone doesn't need this: *Add to Home Screen* already opens full screen. To install it as an app in Chrome, mark the address as secure once on each phone:
+
+1. In Chrome, open `chrome://flags/#unsafely-treat-insecure-origin-as-secure`.
+2. Enter the address you use, e.g. `http://remote.local` (add the IP too if you use it, separated by a comma: `http://remote.local,http://192.168.1.50`). Include the port if it isn't 80, e.g. `http://remote.local:8080`.
+3. Set the flag to *Enabled* and tap *Relaunch*.
+4. Open the address again and choose *⋮ > Add to Home screen > Install* (or *Install app*).
+
+<img src="docs/screenshots/install-flag.png" alt="The Insecure origins treated as secure flag set to http://remote.local and enabled" width="360">
+
+The installed app opens full screen with its own icon. The flag affects only the addresses you entered. If the address changes (another IP or port), add the new one to the flag. Brave, Edge and other Chromium browsers have the same flag: replace `chrome://` with `brave://`, `edge://` and so on.
 
 **The pointer feels too fast or "floaty".** Your desktop also applies its own acceleration to OpenCouchpad's virtual mouse. For the most precise feel, set the pointer acceleration profile to *flat* for "OpenCouchpad Mouse": KDE *Settings > Mouse*, GNOME Tweaks *Mouse acceleration*, Windows *Mouse > Enhance pointer precision* off. Then tune speed in the app.
 
